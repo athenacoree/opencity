@@ -1,9 +1,24 @@
 import unittest
+import urllib.error
+from unittest.mock import MagicMock, patch
 
 import build_osm_chunks as importer
 
 
 class OSMImporterTests(unittest.TestCase):
+    def test_fetch_osm_retries_temporary_http_errors(self):
+        response = MagicMock()
+        response.__enter__.return_value = response
+        response.read.return_value = b'{"elements": []}'
+        temporary_error = urllib.error.HTTPError(
+            importer.OVERPASS, 502, "Bad Gateway", None, None
+        )
+        with patch.object(
+            importer.urllib.request, "urlopen", side_effect=[temporary_error, response]
+        ), patch.object(importer.time, "sleep") as sleep:
+            self.assertEqual(importer.fetch_osm(), {"elements": []})
+        sleep.assert_called_once_with(2)
+
     def test_safe_number_handles_messy_osm_tags(self):
         self.assertEqual(importer.safe_number("2;3", 1.0), 2.0)
         self.assertEqual(importer.safe_number("12 m", 0.0), 12.0)
