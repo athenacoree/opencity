@@ -7,7 +7,13 @@ class OSMImporterTests(unittest.TestCase):
     def test_safe_number_handles_messy_osm_tags(self):
         self.assertEqual(importer.safe_number("2;3", 1.0), 2.0)
         self.assertEqual(importer.safe_number("12 m", 0.0), 12.0)
+        self.assertEqual(importer.safe_number("3.5 m", 0.0), 3.5)
+        self.assertEqual(importer.safe_number("2.75", 0.0), 2.75)
         self.assertEqual(importer.safe_number("unknown", 4.0), 4.0)
+
+    def test_point_features_are_added_to_the_correct_chunk(self):
+        x, z = importer.local_xy(importer.ORIGIN_LON, importer.ORIGIN_LAT)
+        self.assertEqual(importer.chunk_key(x, z), "0_0")
 
     def test_point_in_polygon(self):
         square = [(0.0, 0.0), (2.0, 0.0), (2.0, 2.0), (0.0, 2.0), (0.0, 0.0)]
