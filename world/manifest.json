@@ -19,11 +19,11 @@
     "roads": 2972,
     "buildings": 386,
     "areas": 434,
-    "points_of_interest": 83,
-    "named_public_places": 70,
+    "points_of_interest": 89,
+    "named_public_places": 73,
     "named_public_buildings": 6,
     "trees": 49,
     "waterway_segments": 0
   },
-  "generated_unix": 1794983124
+  "generated_unix": 1794983385
 }
