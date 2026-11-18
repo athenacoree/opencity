@@ -2,7 +2,7 @@
 
 Proyecto de mundo abierto en Godot 4.7, tomando OpenCity como base técnica inicial. El objetivo es construir una representación explorable de Güira de Melena, Artemisa, Cuba, para Android y con funcionamiento offline.
 
- > **Estado actual:** ya están generados e incorporados 158 sectores cartográficos OSM del municipio (2.972 segmentos de carretera, 386 huellas de edificios y 171 áreas). El mapa real está en su primera iteración geométrica; todavía requiere validación visual y de rendimiento en Godot/Android. No hay una APK/AAB verificada.
+> **Estado actual:** ya están generados e incorporados 158 sectores cartográficos OSM del municipio (2.972 segmentos de carretera, 386 huellas de edificios y 171 áreas). El mapa real está en su primera iteración geométrica; todavía requiere validación visual y de rendimiento en Godot/Android. No hay una APK/AAB verificada.
 
 ## Plataforma y dirección
 - Objetivo: aplicación Android nativa, no navegador ni PWA.
