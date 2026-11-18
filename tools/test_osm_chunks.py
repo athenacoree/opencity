@@ -26,6 +26,21 @@ class OSMImporterTests(unittest.TestCase):
                 "",
             )
 
+    def test_public_names_fall_back_to_spanish_and_official_names(self):
+        self.assertEqual(
+            importer.preferred_public_name({"name:es": "Escuela de Güira"}),
+            "Escuela de Güira",
+        )
+        self.assertEqual(
+            importer.preferred_public_name({"official_name": "Nombre Oficial"}),
+            "Nombre Oficial",
+        )
+        self.assertEqual(
+            importer.preferred_public_name({"short_name": "Centro"}),
+            "Centro",
+        )
+        self.assertEqual(importer.preferred_public_name({"operator": "Persona particular"}), "")
+
     def test_named_public_buildings_are_exported(self):
         self.assertEqual(
             importer.public_building_label({
