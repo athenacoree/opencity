@@ -17,7 +17,8 @@ var _game: Node
 
 func _ready() -> void:
 	_game = get_tree().get_first_node_in_group("game")
-	if not _running_self_test():
+	# Mouse capture is desktop-only; it can interfere with mobile touch input.
+	if not _running_self_test() and not OS.has_feature("mobile") and not DisplayServer.is_touchscreen_available():
 		Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 
 func _running_self_test() -> bool:
