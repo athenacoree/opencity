@@ -437,7 +437,7 @@ func _build_building(parent: Node3D, points: Array, feature: Dictionary) -> void
 		material.cull_mode = BaseMaterial3D.CULL_DISABLED
 		_building_materials[category] = material
 	instance.material_override = _building_materials[category]
-\tbody.add_child(instance)
+	body.add_child(instance)
 	_build_building_windows(body, polygon, height, levels)
 	var building_name := str(feature.get("name", "")).strip_edges()
 	if not building_name.is_empty():
