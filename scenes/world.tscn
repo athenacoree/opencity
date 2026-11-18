@@ -80,6 +80,10 @@ fov = 72.0
 far = 800.0
 script = ExtResource("3_cam")
 
+
+[node name="CubaLife" type="Node" parent="."]
+script = ExtResource("12_cuba_life")
+
 [node name="HUD" type="CanvasLayer" parent="."]
 script = ExtResource("6_hud")
 
@@ -120,6 +124,3 @@ text = "WASD  move / drive / fly      E  enter / exit      SHIFT  run / boost / 
 
 [node name="OSMWorld" type="Node3D" parent="."]
 script = ExtResource("11_osm")
-
-[node name="CubaLife" type="Node" parent="."]
-script = ExtResource("12_cuba_life")
