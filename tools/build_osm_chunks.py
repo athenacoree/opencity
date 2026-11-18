@@ -336,7 +336,7 @@ def main() -> int:
         if not highway and not building and not is_area and not is_poi:
             continue
         coords = [(float(p["lon"]), float(p["lat"])) for p in geometry]
-        if building or is_area:
+        if building or is_area or is_poi:
             centre_lon = sum(p[0] for p in coords[:-1] or coords) / len(coords[:-1] or coords)
             centre_lat = sum(p[1] for p in coords[:-1] or coords) / len(coords[:-1] or coords)
             if not inside_boundary(centre_lon, centre_lat):
