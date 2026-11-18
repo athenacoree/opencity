@@ -30,6 +30,23 @@ class OSMImporterTests(unittest.TestCase):
         x, z = importer.local_xy(importer.ORIGIN_LON, importer.ORIGIN_LAT)
         self.assertEqual(importer.chunk_key(x, z), "0_0")
 
+    def test_area_polygon_is_clipped_into_each_overlapped_chunk(self):
+        polygon = [[900, 100], [1100, 100], [1100, 300], [900, 300]]
+        west = importer.clip_polygon_to_rect(polygon, 0, 0, 1000, 1000)
+        east = importer.clip_polygon_to_rect(polygon, 1000, 0, 2000, 1000)
+        self.assertEqual(len(west), 4)
+        self.assertEqual(len(east), 4)
+        self.assertEqual(min(p[0] for p in west), 900)
+        self.assertEqual(max(p[0] for p in west), 1000)
+        self.assertEqual(min(p[0] for p in east), 1000)
+        self.assertEqual(max(p[0] for p in east), 1100)
+
+    def test_polygon_outside_sector_is_empty(self):
+        polygon = [[1100, 100], [1200, 100], [1200, 200], [1100, 200]]
+        self.assertEqual(
+            importer.clip_polygon_to_rect(polygon, 0, 0, 1000, 1000), []
+        )
+
     def test_point_in_polygon(self):
         square = [(0.0, 0.0), (2.0, 0.0), (2.0, 2.0), (0.0, 2.0), (0.0, 0.0)]
         self.assertTrue(importer.point_in_polygon(1.0, 1.0, square))
