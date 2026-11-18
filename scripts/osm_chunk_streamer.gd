@@ -17,6 +17,7 @@ var _map_available := false
 var _road_material: StandardMaterial3D
 var _ground_material: StandardMaterial3D
 var _area_materials: Dictionary = {}
+var _point_materials: Dictionary = {}
 
 
 func _ready() -> void:
@@ -122,7 +123,14 @@ func _build_ground(parent: Node3D, x: int, z: int) -> void:
 func _build_feature(parent: Node3D, feature: Dictionary) -> void:
 	var kind := str(feature.get("kind", ""))
 	var points: Variant = feature.get("points", [])
-	if not points is Array or points.size() < 2:
+	if not points is Array:
+		return
+	if kind == "poi" or kind == "vegetation":
+		if points.is_empty() or not points[0] is Array or points[0].size() < 2:
+			return
+		_build_point_feature(parent, points[0], feature, kind)
+		return
+	if points.size() < 2:
 		return
 	if kind == "road":
 		for i in range(points.size() - 1):
@@ -195,6 +203,55 @@ func _build_area(parent: Node3D, raw_points: Array, category: String) -> void:
 	material.cull_mode = BaseMaterial3D.CULL_DISABLED
 	instance.material_override = material
 	parent.add_child(instance)
+
+
+func _build_point_feature(parent: Node3D, point: Array, feature: Dictionary, kind: String) -> void:
+	var category := str(feature.get("category", ""))
+	var marker := Node3D.new()
+	marker.position = Vector3(float(point[0]), 0.0, float(point[1]))
+	marker.name = "%s_%s" % [kind, str(feature.get("osm_id", "unknown"))]
+	parent.add_child(marker)
+	if kind == "vegetation":
+		var trunk := MeshInstance3D.new()
+		var trunk_mesh := CylinderMesh.new()
+		trunk_mesh.top_radius = 0.10
+		trunk_mesh.bottom_radius = 0.16
+		trunk_mesh.height = 1.8
+		trunk.mesh = trunk_mesh
+		trunk.position.y = 0.9
+		trunk.material_override = _point_material("tree_trunk", Color(0.30, 0.20, 0.12))
+		marker.add_child(trunk)
+		var crown := MeshInstance3D.new()
+		var crown_mesh := SphereMesh.new()
+		crown_mesh.radius = 1.0
+		crown_mesh.height = 2.0
+		crown.mesh = crown_mesh
+		crown.position.y = 2.25
+		crown.material_override = _point_material("tree_crown", Color(0.16, 0.34, 0.17))
+		marker.add_child(crown)
+	else:
+		var post := MeshInstance3D.new()
+		var post_mesh := CylinderMesh.new()
+		post_mesh.top_radius = 0.20
+		post_mesh.bottom_radius = 0.28
+		post_mesh.height = 0.9
+		post.mesh = post_mesh
+		post.position.y = 0.45
+		var colour := Color(0.78, 0.62, 0.28)
+		if category == "amenity":
+			colour = Color(0.30, 0.58, 0.78)
+		elif category == "shop":
+			colour = Color(0.72, 0.42, 0.30)
+		elif category == "tourism":
+			colour = Color(0.48, 0.66, 0.42)
+		post.material_override = _point_material("poi_" + category, colour)
+		marker.add_child(post)
+
+
+func _point_material(key: String, colour: Color) -> StandardMaterial3D:
+	if not _point_materials.has(key):
+		_point_materials[key] = _make_material(colour, 0.9)
+	return _point_materials[key]
 
 
 func _area_colour(category: String) -> Color:
