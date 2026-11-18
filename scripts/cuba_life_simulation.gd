@@ -34,7 +34,10 @@ func _process(delta: float) -> void:
 		game_minutes -= 1440.0
 		game_day += 1
 		world_state_changed.emit()
-	_update_day_night()
+	_day_night_timer += delta
+	if _day_night_timer >= 1.0:
+		_day_night_timer = 0.0
+		_update_day_night()
 	var hour := int(game_minutes / 60.0)
 	if hour != _last_hour:
 		_last_hour = hour
