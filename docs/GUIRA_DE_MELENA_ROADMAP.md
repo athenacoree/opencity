@@ -46,3 +46,9 @@ El repositorio incluye el workflow `.github/workflows/generate-map-data.yml`. Al
 
 ## Capas cartográficas incorporadas al importador
 El importador también conserva polígonos OSM de uso del suelo y elementos naturales etiquetados (por ejemplo, áreas agrícolas, vegetación y agua). El streamer los triangula y representa con materiales diferenciados dentro de cada sector. Estas capas dependen de la cobertura real de OSM: una zona sin etiquetas seguirá siendo terreno base, no una reconstrucción inventada. Las huellas de edificios continúan siendo volúmenes provisionales y no fachadas arquitectónicas detalladas.
+
+
+## Puntos de interés y vegetación puntual
+El importador consulta también nodos OSM etiquetados como servicios (amenity), comercios (shop), turismo (tourism), ocio (leisure) y árboles individuales (natural=tree). Los guarda dentro del sector local correspondiente. El streamer dibuja marcadores sencillos para los puntos de interés y modelos de árbol de bajo coste geométrico. Los contadores `points_of_interest` y `trees` del manifiesto permiten medir la cobertura real; no se inventan ubicaciones donde OSM no tenga datos.
+
+La lectura de alturas y plantas acepta ahora correctamente decimales como `3.5 m`, con pruebas unitarias específicas.
