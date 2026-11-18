@@ -1,1 +1,1 @@
-{"chunk":"-2_2","features":[{"kind":"road","osm_id":116846300,"points":[[-2139.54,2860.02],[-1751.78,3054.45]],"highway":"track","waterway":"","name":"","surface":""}]}
+{"chunk":"-2_2","features":[{"kind":"road","osm_id":116846300,"points":[[-2139.54,2860.02],[-1751.78,3054.45]],"highway":"track","waterway":"","name":"","surface":""},{"kind":"area","osm_id":462999543,"category":"water","points":[[-2000.0,3000.0],[-2000.0,2954.447488173012],[-1951.98,2978.16],[-1962.4770468358956,3000.0]]}]}

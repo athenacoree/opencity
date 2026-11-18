@@ -15,13 +15,13 @@
   "data_source": "© OpenStreetMap contributors",
   "licence": "ODbL 1.0",
   "feature_counts": {
-    "chunks": 158,
+    "chunks": 173,
     "roads": 2972,
     "buildings": 386,
-    "areas": 183,
+    "areas": 434,
     "points_of_interest": 65,
     "trees": 49,
     "waterway_segments": 0
   },
-  "generated_unix": 1794982370
+  "generated_unix": 1794982639
 }
