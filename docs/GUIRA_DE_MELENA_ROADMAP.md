@@ -36,3 +36,7 @@ Los datos se obtienen de OpenStreetMap y deben atribuirse como “© OpenStreetM
 
 ## Estado comprobable
 El cargador y el importador están en el código. El manifiesto inicial marca `boundary_verified: false`, por lo que el mapa OSM no se activa todavía. Para activarlo, el importador debe localizar el límite administrativo y generar los sectores reales. No se debe anunciar el mapa municipal como terminado hasta validar cobertura, escala, calles y edificios.
+
+
+## Automatización de la generación
+El repositorio incluye el workflow `.github/workflows/generate-map-data.yml`. Al incorporarse a `main`, intenta ejecutar el importador y, únicamente si el límite municipal está verificado y hay sectores/calles, guarda los JSON offline generados en el repositorio. También permite ejecución manual desde GitHub Actions. Este proceso genera datos cartográficos; no compila APK ni AAB.
