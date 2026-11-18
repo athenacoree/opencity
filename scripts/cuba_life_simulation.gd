@@ -14,6 +14,7 @@ var player_money_cup := 3500
 var selected_house_id := ""
 var selected_job_id := "teacher"
 var mission_index := 0
+var intro_seen := false
 var _save_timer := 0.0
 var _last_hour := -1
 
@@ -68,6 +69,7 @@ func _load_profile() -> void:
 	selected_house_id = str(parsed.get("house_id", ""))
 	selected_job_id = str(parsed.get("job_id", selected_job_id))
 	mission_index = int(parsed.get("mission_index", 0))
+	intro_seen = bool(parsed.get("intro_seen", false))
 	game_day = maxi(1, int(parsed.get("day", 1)))
 	game_minutes = clampf(float(parsed.get("minutes", game_minutes)), 0.0, 1439.99)
 
@@ -81,6 +83,7 @@ func _save_profile() -> void:
 		"house_id": selected_house_id,
 		"job_id": selected_job_id,
 		"mission_index": mission_index,
+		"intro_seen": intro_seen,
 		"day": game_day,
 		"minutes": game_minutes
 	}))
@@ -161,6 +164,19 @@ func is_shop_open(shop_id: String) -> bool:
 	return false
 
 
+func get_story_title() -> String:
+	return str(config.get("story", {}).get("title", "Güira de Melena"))
+
+
+func get_story_intro() -> String:
+	return str(config.get("story", {}).get("intro", ""))
+
+
+func mark_intro_seen() -> void:
+	intro_seen = true
+	_save_profile()
+
+
 func get_house_options() -> Array:
 	return config.get("houses", [])
 
@@ -212,8 +228,8 @@ func get_hud_summary(position: Vector3) -> String:
 	var signal_bars := get_mobile_signal(position)
 	var power_text := "Luz: sí" if powered else "Luz: no"
 	var signal_text := "Señal: " + "▮".repeat(signal_bars) + "▯".repeat(4 - signal_bars)
-	return "%s   %s   %s   %s CUP   Día %d" % [
-		get_clock_text(), power_text, signal_text, _format_money(player_money_cup), game_day
+	return "%s   %s   %s   %s CUP   1 USD ≈ %d CUP   Día %d" % [
+		get_clock_text(), power_text, signal_text, _format_money(player_money_cup), roundi(get_exchange_rate()), game_day
 	]
 
 
