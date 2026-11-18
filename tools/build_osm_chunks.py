@@ -174,7 +174,7 @@ def main() -> int:
     def inside_boundary(lon: float, lat: float) -> bool:
         return any(point_in_polygon(lon, lat, ring) for ring in boundary_rings)
 
-    if boundary is None:
+    if not boundary_rings:
         print(
             "No se encontró una relación administrativa OSM verificable para el municipio. "
             "No se crearán sectores aproximados como si fueran el límite real. "
