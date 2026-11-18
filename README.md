@@ -2,7 +2,7 @@
 
 Proyecto de mundo abierto en Godot 4.7, tomando OpenCity como base técnica inicial. El objetivo es construir una representación explorable de Güira de Melena, Artemisa, Cuba, para Android y con funcionamiento offline.
 
-> **Estado honesto:** la ciudad que viene de OpenCity sigue siendo procedural y provisional. Todavía no es el mapa real de Güira de Melena y este repositorio aún no contiene una APK/AAB verificada.
+ > **Estado actual:** ya están generados e incorporados 158 sectores cartográficos OSM del municipio (2.972 segmentos de carretera, 386 huellas de edificios y 171 áreas). El mapa real está en su primera iteración geométrica; todavía requiere validación visual y de rendimiento en Godot/Android. No hay una APK/AAB verificada.
 
 ## Plataforma y dirección
 - Objetivo: aplicación Android nativa, no navegador ni PWA.
@@ -26,7 +26,7 @@ En ordenador se mantienen los controles originales:
 En dispositivos táctiles se incorpora una primera interfaz en pantalla con cruceta, correr, salto/freno y entrar/salir. Arrastrar sobre el espacio libre de la pantalla gira la cámara. Los controles se adaptan al tamaño del viewport y a ambas orientaciones.
 
 ## Arquitectura y plan
-Consulta [docs/GUIRA_DE_MELENA_ROADMAP.md](docs/GUIRA_DE_MELENA_ROADMAP.md) para la arquitectura híbrida 2D/3D, el mapa OSM y el streaming offline. Para generar los datos municipales durante el desarrollo, ejecuta `python3 tools/build_osm_chunks.py` desde la raíz del repositorio; el juego no descarga mapas al ejecutarse.
+Consulta [docs/GUIRA_DE_MELENA_ROADMAP.md](docs/GUIRA_DE_MELENA_ROADMAP.md) para la arquitectura híbrida 2D/3D, el estado del mapa OSM y el streaming offline. Los 158 sectores municipales ya están incluidos en `world/chunks/`; el juego los carga localmente y no descarga mapas al ejecutarse.
 
 ## Licencias
 Se conserva la licencia MIT del código base. Los recursos de terceros y sus licencias están identificados en [CREDITS.md](CREDITS.md).
