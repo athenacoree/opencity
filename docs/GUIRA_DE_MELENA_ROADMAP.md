@@ -41,7 +41,7 @@ Este documento separa lo que ya existe de lo que todavía debe construirse. Open
 ### 3. Rendimiento y persistencia
 - LOD, culling, carga/descarga de sectores y colisiones por proximidad.
 - Perfiles gráficos bajo/medio/alto.
-- Guardado local versionado: posición, vehículo, ajustes y progreso; escritura segura y recuperación ante archivos dañados.
+- Ampliar el guardado local actual (última posición) para incluir vehículo, ajustes y progreso; mantener versionado y recuperación ante archivos dañados.
 
 ### 4. Contenido
 - Ciclo día/noche y clima ligero.
@@ -51,5 +51,6 @@ Este documento separa lo que ya existe de lo que todavía debe construirse. Open
 ## Estado de esta entrega
 - Se incorpora una primera capa de controles táctiles que reutiliza la entrada de teclado existente.
 - Se incorpora giro de cámara mediante arrastre táctil.
+- Se añade guardado local de la última posición y recuperación al volver a abrir el juego.
 - Se documenta la arquitectura híbrida y el plan de mapa/streaming.
 - Aún no hay mapa municipal real, APK/AAB verificada ni prueba de rendimiento en un teléfono. No debe anunciarse como terminado hasta validar esas partes.
