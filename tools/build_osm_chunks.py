@@ -30,6 +30,7 @@ OVERPASS = "https://overpass-api.de/api/interpreter"
 SOUTH, WEST, NORTH, EAST = 22.54789, -82.569185, 22.850679, -82.430933
 ORIGIN_LAT, ORIGIN_LON = 22.7933, -82.5073  # town centre
 CHUNK_SIZE = 1000.0
+OSM_BOUNDARY_RELATION_ID = 2576652  # Güira de Melena, referenced by Wikimedia Commons
 
 
 def norm(value: str) -> str:
@@ -42,6 +43,7 @@ def overpass_query() -> str:
     bbox = f"{SOUTH},{WEST},{NORTH},{EAST}"
     return (
         '[out:json][timeout:180];('
+        f'relation(id:{OSM_BOUNDARY_RELATION_ID});'
         f'relation["boundary"="administrative"]["admin_level"~"5|6|7"]({bbox});'
         f'way["highway"]({bbox});'
         f'way["building"]({bbox});'
@@ -140,29 +142,37 @@ def main() -> int:
         return 2
 
     elements = osm.get("elements", [])
-    relations = [
-        e for e in elements
-        if e.get("type") == "relation"
-        and e.get("tags", {}).get("boundary") == "administrative"
-        and "guira de melena" in norm(
-            e.get("tags", {}).get("name", "")
-            or e.get("tags", {}).get("official_name", "")
-            or e.get("tags", {}).get("name:es", "")
+    # Prefer the municipality relation explicitly referenced by Wikimedia,
+    # but still verify its OSM tags before trusting the geometry.
+    def is_guira_relation(element: dict) -> bool:
+        tags = element.get("tags", {})
+        names = " ".join(str(tags.get(k, "")) for k in ("name", "official_name", "name:es", "name:en"))
+        return (
+            element.get("type") == "relation"
+            and tags.get("boundary") == "administrative"
+            and (
+                element.get("id") == OSM_BOUNDARY_RELATION_ID
+                or "guira de melena" in norm(names)
+                or tags.get("wikidata") == "Q603115"
+            )
         )
-    ]
-    boundary = None
+
+    relations = [e for e in elements if is_guira_relation(e)]
+    relations.sort(key=lambda r: (r.get("id") != OSM_BOUNDARY_RELATION_ID,
+                                  int(r.get("tags", {}).get("admin_level", "99"))))
+    boundary_rings: list[list[tuple[float, float]]] = []
     boundary_relation_id = None
-    if relations:
-        relations.sort(key=lambda r: int(r.get("tags", {}).get("admin_level", "99")))
-        for relation in relations:
-            rings = stitch_outer_rings(relation)
-            if rings:
-                boundary = max(rings, key=lambda ring: abs(sum(
-                    ring[i][0] * ring[i + 1][1] - ring[i + 1][0] * ring[i][1]
-                    for i in range(len(ring) - 1)
-                )))
-                boundary_relation_id = relation["id"]
-                break
+    for relation in relations:
+        rings = stitch_outer_rings(relation)
+        if rings:
+            # Keep all disconnected outer components rather than discarding
+            # smaller coastal/island pieces of the municipality.
+            boundary_rings = rings
+            boundary_relation_id = relation["id"]
+            break
+
+    def inside_boundary(lon: float, lat: float) -> bool:
+        return any(point_in_polygon(lon, lat, ring) for ring in boundary_rings)
 
     if boundary is None:
         print(
@@ -190,7 +200,7 @@ def main() -> int:
         if building:
             centre_lon = sum(p[0] for p in coords[:-1] or coords) / len(coords[:-1] or coords)
             centre_lat = sum(p[1] for p in coords[:-1] or coords) / len(coords[:-1] or coords)
-            if not point_in_polygon(centre_lon, centre_lat, boundary):
+            if not inside_boundary(centre_lon, centre_lat):
                 continue
             points = [list(local_xy(lon, lat)) for lon, lat in coords]
             xs = [p[0] for p in points]
@@ -209,7 +219,7 @@ def main() -> int:
             for index in range(len(coords) - 1):
                 a, b = coords[index], coords[index + 1]
                 midpoint = ((a[0] + b[0]) * 0.5, (a[1] + b[1]) * 0.5)
-                if not point_in_polygon(midpoint[0], midpoint[1], boundary):
+                if not inside_boundary(midpoint[0], midpoint[1]):
                     continue
                 pa, pb = local_xy(*a), local_xy(*b)
                 mx, mz = (pa[0] + pb[0]) * 0.5, (pa[1] + pb[1]) * 0.5
@@ -245,8 +255,9 @@ def main() -> int:
         "origin": {"latitude": ORIGIN_LAT, "longitude": ORIGIN_LON},
         "chunk_size_m": CHUNK_SIZE,
         "boundary_verified": True,
-        "boundary_source": "OpenStreetMap administrative relation",
+        "boundary_source": "OpenStreetMap administrative relation, cross-referenced with Wikimedia Commons",
         "boundary_relation_id": boundary_relation_id,
+        "boundary_components": len(boundary_rings),
         "data_source": "© OpenStreetMap contributors",
         "licence": "ODbL 1.0",
         "feature_counts": {
