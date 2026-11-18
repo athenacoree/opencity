@@ -19,6 +19,32 @@ class OSMImporterTests(unittest.TestCase):
             self.assertEqual(importer.fetch_osm(), {"elements": []})
         sleep.assert_called_once_with(2)
 
+    def test_private_residential_names_are_not_exported(self):
+        for kind in ("house", "residential", "detached", "semidetached_house", "bungalow"):
+            self.assertEqual(
+                importer.public_building_label({"building": kind, "name": "Nombre privado"}),
+                "",
+            )
+
+    def test_named_public_buildings_are_exported(self):
+        self.assertEqual(
+            importer.public_building_label({
+                "building": "yes", "amenity": "school", "name": "Escuela Pública"
+            }),
+            "Escuela Pública",
+        )
+        self.assertEqual(
+            importer.public_building_label({
+                "building": "school", "name": "Centro Escolar"
+            }),
+            "Centro Escolar",
+        )
+
+    def test_public_place_categories_include_healthcare_and_workplaces(self):
+        self.assertEqual(importer.public_place_category({"healthcare": "clinic"}), "healthcare")
+        self.assertEqual(importer.public_place_category({"office": "government"}), "office")
+        self.assertEqual(importer.public_place_category({"craft": "carpenter"}), "craft")
+
     def test_safe_number_handles_messy_osm_tags(self):
         self.assertEqual(importer.safe_number("2;3", 1.0), 2.0)
         self.assertEqual(importer.safe_number("12 m", 0.0), 12.0)

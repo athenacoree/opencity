@@ -36,3 +36,6 @@ Se conserva la licencia MIT del código base. Los recursos de terceros y sus lic
 El siguiente importador incorpora nodos OSM de puntos de interés (servicios, comercios, turismo y ocio) y árboles etiquetados. Se representan con marcadores 3D ligeros y sus cantidades quedan registradas en el manifiesto. La cobertura depende de los datos existentes en OpenStreetMap; no se generan negocios o árboles ficticios.
 
 Los datos del mapa más recientes incluyen 65 puntos de interés y 49 árboles etiquetados. La última importación detectó 0 tramos lineales de agua etiquetados en el área consultada. Se está ampliando la cobertura de espacios recreativos y cursos de agua OSM; sus cantidades se registrarán en el manifiesto tras la siguiente importación.
+
+
+La capa de lugares públicos se amplía con centros sanitarios, oficinas y talleres etiquetados en OpenStreetMap. Los nombres de viviendas privadas y de sus residentes no se importan. El render incorpora una primera pasada de aceras, farolas decorativas, ventanas y rótulos para establecimientos públicos.
