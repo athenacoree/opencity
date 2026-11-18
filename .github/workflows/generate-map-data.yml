@@ -32,6 +32,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Test OSM importer
+        run: python3 -m unittest discover -s tools -p 'test_*.py' -v
+
       - name: Generate offline OSM sectors
         run: python3 tools/build_osm_chunks.py
 
