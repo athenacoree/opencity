@@ -30,3 +30,7 @@ Consulta [docs/GUIRA_DE_MELENA_ROADMAP.md](docs/GUIRA_DE_MELENA_ROADMAP.md) para
 
 ## Licencias
 Se conserva la licencia MIT del código base. Los recursos de terceros y sus licencias están identificados en [CREDITS.md](CREDITS.md).
+
+
+### Nuevas capas en desarrollo
+El siguiente importador incorpora nodos OSM de puntos de interés (servicios, comercios, turismo y ocio) y árboles etiquetados. Se representan con marcadores 3D ligeros y sus cantidades quedan registradas en el manifiesto. La cobertura depende de los datos existentes en OpenStreetMap; no se generan negocios o árboles ficticios.
