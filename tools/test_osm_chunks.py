@@ -45,6 +45,17 @@ class OSMImporterTests(unittest.TestCase):
         self.assertEqual(importer.public_place_category({"office": "government"}), "office")
         self.assertEqual(importer.public_place_category({"craft": "carpenter"}), "craft")
 
+    def test_public_place_categories_include_education_and_community_services(self):
+        self.assertEqual(importer.public_place_category({"education": "school"}), "education")
+        self.assertEqual(importer.public_place_category({"public_transport": "platform"}), "public_transport")
+        self.assertEqual(importer.public_place_category({"social_facility": "day_care"}), "social_facility")
+        self.assertEqual(importer.public_place_category({"emergency": "fire_station"}), "emergency")
+
+    def test_overpass_query_requests_public_service_categories(self):
+        query = importer.overpass_query()
+        for tag in ("education", "public_transport", "social_facility", "emergency"):
+            self.assertIn(f'["{tag}"]', query)
+
     def test_safe_number_handles_messy_osm_tags(self):
         self.assertEqual(importer.safe_number("2;3", 1.0), 2.0)
         self.assertEqual(importer.safe_number("12 m", 0.0), 12.0)

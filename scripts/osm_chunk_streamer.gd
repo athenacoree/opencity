@@ -290,12 +290,16 @@ func _build_point_feature(parent: Node3D, point: Array, feature: Dictionary, kin
 	parent.add_child(marker)
 	if kind == "vegetation":
 		var species := str(feature.get("species", "")).to_lower()
-		var is_palm := "palm" in species or "palma" in species or "cocos" in species
+		var genus := str(feature.get("genus", "")).to_lower()
+		var taxon := str(feature.get("taxon", "")).to_lower()
+		var leaf_type := str(feature.get("leaf_type", "")).to_lower()
+		var is_palm := "palm" in species or "palma" in species or "cocos" in species or "phoenix" in species or "arecaceae" in taxon or "arecaceae" in genus or leaf_type == "palm"
 		var trunk := MeshInstance3D.new()
 		var trunk_mesh := CylinderMesh.new()
 		trunk_mesh.top_radius = 0.08 if is_palm else 0.10
 		trunk_mesh.bottom_radius = 0.15
-		trunk_mesh.height = 4.4 if is_palm else 1.8
+		var tree_height := clampf(float(feature.get("height", 5.0)), 2.0, 18.0)
+		trunk_mesh.height = tree_height * (0.78 if is_palm else 0.38)
 		trunk.mesh = trunk_mesh
 		trunk.position.y = trunk_mesh.height * 0.5
 		trunk.material_override = _point_material("tree_trunk", Color(0.30, 0.20, 0.12))
@@ -306,9 +310,9 @@ func _build_point_feature(parent: Node3D, point: Array, feature: Dictionary, kin
 				var frond_mesh := CylinderMesh.new()
 				frond_mesh.top_radius = 0.015
 				frond_mesh.bottom_radius = 0.055
-				frond_mesh.height = 2.5
+				frond_mesh.height = tree_height * 0.38
 				frond.mesh = frond_mesh
-				frond.position.y = 4.35
+				frond.position.y = tree_height * 0.78
 				frond.rotation = Vector3(deg_to_rad(58.0), TAU * float(i) / 7.0, 0.0)
 				frond.material_override = _point_material("palm_leaf", Color(0.17, 0.36, 0.17))
 				marker.add_child(frond)
@@ -316,10 +320,10 @@ func _build_point_feature(parent: Node3D, point: Array, feature: Dictionary, kin
 			for i in range(3):
 				var crown := MeshInstance3D.new()
 				var crown_mesh := SphereMesh.new()
-				crown_mesh.radius = 0.78 if i == 0 else 0.62
-				crown_mesh.height = 1.45
+				crown_mesh.radius = tree_height * (0.15 if i == 0 else 0.12)
+				crown_mesh.height = tree_height * 0.28
 				crown.mesh = crown_mesh
-				crown.position = Vector3(0.0, 2.0 + float(i % 2) * 0.42, (float(i) - 1.0) * 0.38)
+				crown.position = Vector3(0.0, tree_height * 0.68 + float(i % 2) * tree_height * 0.04, (float(i) - 1.0) * tree_height * 0.07)
 				crown.material_override = _point_material("tree_crown", Color(0.16, 0.34, 0.17))
 				marker.add_child(crown)
 	else:
