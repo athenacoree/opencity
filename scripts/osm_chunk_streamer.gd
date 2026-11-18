@@ -19,6 +19,7 @@ var _ground_material: StandardMaterial3D
 var _waterway_material: StandardMaterial3D
 var _area_materials: Dictionary = {}
 var _point_materials: Dictionary = {}
+var _building_materials: Dictionary = {}
 
 
 func _ready() -> void:
@@ -302,39 +303,68 @@ func _area_colour(category: String) -> Color:
 
 
 func _build_building(parent: Node3D, points: Array, feature: Dictionary) -> void:
+	var polygon := PackedVector2Array()
+	for point in points:
+		if point is Array and point.size() >= 2:
+			polygon.append(Vector2(float(point[0]), float(point[1])))
+	if polygon.size() > 2 and polygon[0].is_equal_approx(polygon[polygon.size() - 1]):
+		polygon.remove_at(polygon.size() - 1)
+	if polygon.size() < 3:
+		return
 	var min_x := INF
 	var max_x := -INF
 	var min_z := INF
 	var max_z := -INF
-	for point in points:
-		if not point is Array or point.size() < 2:
-			continue
-		min_x = minf(min_x, float(point[0]))
-		max_x = maxf(max_x, float(point[0]))
-		min_z = minf(min_z, float(point[1]))
-		max_z = maxf(max_z, float(point[1]))
-	var width := maxf(max_x - min_x, 3.0)
-	var depth := maxf(max_z - min_z, 3.0)
-	if width > 100.0 or depth > 100.0:
+	for point in polygon:
+		min_x = minf(min_x, point.x)
+		max_x = maxf(max_x, point.x)
+		min_z = minf(min_z, point.y)
+		max_z = maxf(max_z, point.y)
+	var width := max_x - min_x
+	var depth := max_z - min_z
+	if width < 1.0 or depth < 1.0 or width > 100.0 or depth > 100.0:
 		return
 	var levels := float(feature.get("levels", 1.0))
 	var height := clampf(float(feature.get("height", levels * 3.2)), 3.0, 45.0)
+	var category := str(feature.get("building", "yes"))
 	var body := StaticBody3D.new()
-	body.position = Vector3((min_x + max_x) * 0.5, height * 0.5, (min_z + max_z) * 0.5)
-	var mesh := MeshInstance3D.new()
-	var box := BoxMesh.new()
-	box.size = Vector3(width, height, depth)
-	mesh.mesh = box
-	var material := _make_material(_building_colour(str(feature.get("building", "yes"))), 0.88)
-	mesh.material_override = material
-	body.add_child(mesh)
+	body.name = "Building_%s" % str(feature.get("osm_id", "unknown"))
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var roof_indices := Geometry2D.triangulate_polygon(polygon)
+	if roof_indices.is_empty():
+		return
+	for index in roof_indices:
+		var p := polygon[index]
+		surface.add_vertex(Vector3(p.x, height, p.y))
+	for i in range(polygon.size()):
+		var a := polygon[i]
+		var b := polygon[(i + 1) % polygon.size()]
+		surface.add_vertex(Vector3(a.x, 0.0, a.y))
+		surface.add_vertex(Vector3(b.x, 0.0, b.y))
+		surface.add_vertex(Vector3(b.x, height, b.y))
+		surface.add_vertex(Vector3(a.x, 0.0, a.y))
+		surface.add_vertex(Vector3(b.x, height, b.y))
+		surface.add_vertex(Vector3(a.x, height, a.y))
+	surface.generate_normals()
+	var building_mesh := surface.commit()
+	if building_mesh == null:
+		return
+	var instance := MeshInstance3D.new()
+	instance.mesh = building_mesh
+	if not _building_materials.has(category):
+		var material := _make_material(_building_colour(category), 0.88)
+		material.cull_mode = BaseMaterial3D.CULL_DISABLED
+		_building_materials[category] = material
+	instance.material_override = _building_materials[category]
+	body.add_child(instance)
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
-	shape.size = box.size
+	shape.size = Vector3(width, height, depth)
 	collision.shape = shape
+	collision.position = Vector3((min_x + max_x) * 0.5, height * 0.5, (min_z + max_z) * 0.5)
 	body.add_child(collision)
 	parent.add_child(body)
-
 
 func _building_colour(category: String) -> Color:
 	match category:
