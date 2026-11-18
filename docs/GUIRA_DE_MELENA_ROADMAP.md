@@ -72,3 +72,9 @@ En dispositivos táctiles/móviles el juego vigila el FPS en ventanas de cinco s
 
 ## Puntos de interés con huella poligonal
 Además de los nodos OSM, el importador recoge establecimientos y servicios etiquetados como áreas (amenity, shop y tourism en ways). Se crea un punto de referencia dentro del sector para que puedan aparecer en el mundo y se conserve su categoría y nombre. No se inventan nombres ni ubicaciones; la cobertura depende de OSM.
+
+
+## Nombres públicos y detalle urbano
+La importación incorpora categorías OSM de servicios sanitarios, oficinas y talleres (healthcare, office, craft), además de amenity, shop, tourism y leisure. Conserva nombres de establecimientos y edificios institucionales etiquetados. Se excluyen expresamente los nombres de edificios residenciales privados para no convertir el mapa en un directorio de habitantes. No se extraen nombres de propietarios ni datos personales desde Google Maps.
+
+En el render se añaden aceras ligeras a calles urbanas, materiales diferenciados para caminos sin pavimentar, farolas decorativas de bajo coste en tramos principales, ventanas agrupadas por edificio, rótulos 3D para lugares públicos con nombre y modelos de vegetación algo más variados, incluyendo palmeras cuando la etiqueta de especie lo permite. La cobertura y la colocación real requieren validación visual dentro de Godot.
