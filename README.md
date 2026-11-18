@@ -39,3 +39,5 @@ Los datos del mapa más recientes incluyen 65 puntos de interés y 49 árboles e
 
 
 La capa de lugares públicos se amplía con centros sanitarios, oficinas y talleres etiquetados en OpenStreetMap. Los nombres de viviendas privadas y de sus residentes no se importan. El render incorpora una primera pasada de aceras, farolas decorativas, ventanas y rótulos para establecimientos públicos.
+
+La cobertura de lugares públicos también reconoce educación, transporte público, instalaciones comunitarias y servicios de emergencia etiquetados en OSM. Los árboles usan datos de especie y altura cuando existen, sin inventar la especie si no está cartografiada.
