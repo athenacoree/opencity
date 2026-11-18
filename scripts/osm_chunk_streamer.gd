@@ -39,7 +39,7 @@ func _load_manifest() -> void:
 		return
 	_manifest = parsed
 	chunk_size = float(_manifest.get("chunk_size_m", chunk_size))
-	_map_available = bool(_manifest.get("boundary_verified", false)) and DirAccess.dir_exists_absolute("res://world/chunks")
+	_map_available = bool(_manifest.get("boundary_verified", false)) and DirAccess.open(CHUNK_DIR) != null
 	if not _map_available:
 		push_warning("OSM sectors are missing or their municipal boundary is unverified; keeping the fallback city.")
 
