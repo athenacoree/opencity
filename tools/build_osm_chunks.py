@@ -110,6 +110,17 @@ def point_in_polygon(lon: float, lat: float, polygon: list[tuple[float, float]])
     return inside
 
 
+def safe_number(value: object, default: float = 1.0) -> float:
+    """Parse imperfect OSM height/level tags without aborting the whole import."""
+    match = re.search(r"[0-9]+(?:\\.[0-9]+)?", str(value or ""))
+    if not match:
+        return default
+    try:
+        return float(match.group(0))
+    except ValueError:
+        return default
+
+
 def local_xy(lon: float, lat: float) -> tuple[float, float]:
     x = (lon - ORIGIN_LON) * 111320.0 * math.cos(math.radians(ORIGIN_LAT))
     z = (ORIGIN_LAT - lat) * 111320.0
@@ -133,7 +144,11 @@ def main() -> int:
         e for e in elements
         if e.get("type") == "relation"
         and e.get("tags", {}).get("boundary") == "administrative"
-        and "guira de melena" in norm(e.get("tags", {}).get("name", ""))
+        and "guira de melena" in norm(
+            e.get("tags", {}).get("name", "")
+            or e.get("tags", {}).get("official_name", "")
+            or e.get("tags", {}).get("name:es", "")
+        )
     ]
     boundary = None
     boundary_relation_id = None
@@ -184,8 +199,8 @@ def main() -> int:
             feature = {
                 "kind": "building", "osm_id": element["id"], "points": points,
                 "building": building,
-                "levels": float(tags.get("building:levels", 1) or 1),
-                "height": float(re.sub(r"[^0-9.]", "", tags.get("height", "0")) or 0),
+                "levels": safe_number(tags.get("building:levels", 1), 1.0),
+                "height": safe_number(tags.get("height", 0), 0.0),
             }
             if feature["height"] <= 0:
                 feature["height"] = feature["levels"] * 3.2
