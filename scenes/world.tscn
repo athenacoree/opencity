@@ -11,6 +11,7 @@
 [ext_resource type="Script" path="res://scripts/props.gd" id="9_props"]
 [ext_resource type="Script" path="res://scripts/parked_cars.gd" id="10_parked"]
 [ext_resource type="Script" path="res://scripts/osm_chunk_streamer.gd" id="11_osm"]
+[ext_resource type="Script" path="res://scripts/cuba_life_simulation.gd" id="12_cuba_life"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
 sky_top_color = Color(0.32, 0.48, 0.72, 1)
@@ -119,3 +120,6 @@ text = "WASD  move / drive / fly      E  enter / exit      SHIFT  run / boost / 
 
 [node name="OSMWorld" type="Node3D" parent="."]
 script = ExtResource("11_osm")
+
+[node name="CubaLife" type="Node" parent="."]
+script = ExtResource("12_cuba_life")
