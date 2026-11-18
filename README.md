@@ -9,6 +9,7 @@ Proyecto de mundo abierto en Godot 4.7, tomando OpenCity como base técnica inic
 - Diseño de mundo: visual moderno y realista; no estética de GTA antiguo.
 - Render híbrido previsto: 3D para zonas cercanas/explorables y recursos 2D/LOD para el horizonte y zonas lejanas.
 - Mundo dividido en sectores para cargar y liberar contenido según la posición.
+- Guardado offline de la última posición controlada en el almacenamiento local del dispositivo.
 - Persistencia local prevista; no requiere servidor para jugar.
 
 ## Abrir el proyecto
