@@ -41,3 +41,7 @@ Los datos del mapa más recientes incluyen 65 puntos de interés y 49 árboles e
 La capa de lugares públicos se amplía con centros sanitarios, oficinas y talleres etiquetados en OpenStreetMap. Los nombres de viviendas privadas y de sus residentes no se importan. El render incorpora una primera pasada de aceras, farolas decorativas, ventanas y rótulos para establecimientos públicos.
 
 La cobertura de lugares públicos también reconoce educación, transporte público, instalaciones comunitarias y servicios de emergencia etiquetados en OSM. Los árboles usan datos de especie y altura cuando existen, sin inventar la especie si no está cartografiada.
+
+
+## Vida cotidiana de Cuba
+Se añade una primera simulación offline configurable: electricidad y señal móvil variables por sector, reloj del mundo, horarios de comercios, economía CUP/USD con precios y cambio variables, salarios por ocupación, catálogo de vehículos de referencia cubana, viviendas iniciales y una historia por misiones. Los valores económicos son ficticios para el balance del juego y no deben interpretarse como precios o salarios oficiales actuales. Consulta el roadmap para las funciones ya conectadas y las que siguen pendientes.
