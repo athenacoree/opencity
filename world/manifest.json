@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "municipality": "Güira de Melena",
+  "province": "Artemisa",
+  "country": "Cuba",
+  "origin": {
+    "latitude": 22.7933,
+    "longitude": -82.5073
+  },
+  "chunk_size_m": 1000.0,
+  "boundary_verified": false,
+  "boundary_source": "pending OpenStreetMap administrative relation import",
+  "data_source": "© OpenStreetMap contributors",
+  "licence": "ODbL 1.0",
+  "feature_counts": {
+    "chunks": 0,
+    "roads": 0,
+    "buildings": 0
+  }
+}

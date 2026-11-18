@@ -26,7 +26,7 @@ En ordenador se mantienen los controles originales:
 En dispositivos táctiles se incorpora una primera interfaz en pantalla con cruceta, correr, salto/freno y entrar/salir. Arrastrar sobre el espacio libre de la pantalla gira la cámara. Los controles se adaptan al tamaño del viewport y a ambas orientaciones.
 
 ## Arquitectura y plan
-Consulta [docs/GUIRA_DE_MELENA_ROADMAP.md](docs/GUIRA_DE_MELENA_ROADMAP.md) para la arquitectura híbrida 2D/3D, streaming por sectores, LOD, estructura de datos y fases de construcción del mapa municipal real.
+Consulta [docs/GUIRA_DE_MELENA_ROADMAP.md](docs/GUIRA_DE_MELENA_ROADMAP.md) para la arquitectura híbrida 2D/3D, el mapa OSM y el streaming offline. Para generar los datos municipales durante el desarrollo, ejecuta `python3 tools/build_osm_chunks.py` desde la raíz del repositorio; el juego no descarga mapas al ejecutarse.
 
 ## Licencias
 Se conserva la licencia MIT del código base. Los recursos de terceros y sus licencias están identificados en [CREDITS.md](CREDITS.md).

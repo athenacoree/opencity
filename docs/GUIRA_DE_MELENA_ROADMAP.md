@@ -1,56 +1,38 @@
 # Güira de Melena – Mundo Abierto
-## Base técnica y plan de conversión de OpenCity
+## Arquitectura de mapa real y streaming offline
 
-Este documento separa lo que ya existe de lo que todavía debe construirse. OpenCity es únicamente la base jugable: su ciudad actual es procedural y de geometría provisional. **Todavía no representa el municipio real de Güira de Melena.**
+El objetivo es representar el municipio completo, no sólo el casco urbano. La referencia cartográfica de búsqueda ofrece un rectángulo aproximado para localizar datos; ese rectángulo **no se considera un límite administrativo**. El importador exige encontrar una relación administrativa OSM coincidente con Güira de Melena antes de generar sectores.
 
-## Objetivo
-- Juego nativo Android instalable como APK/AAB; no navegador, PWA ni servidor.
-- Mundo explorable inspirado en Güira de Melena, Artemisa, Cuba.
-- Funcionamiento offline y progreso guardado en el dispositivo.
-- Adaptación a teléfonos de gama baja/media-baja y orientación vertical u horizontal.
-- Mundo abierto moderno y realista, sin estética retro.
+## Sistema de coordenadas
+- Origen local: centro urbano (22.7933, -82.5073).
+- X: este positivo; Z: sur positivo; unidades Godot en metros.
+- Tamaño de sector: 1.000 × 1.000 metros.
+- Identificadores: `x_z`.
+- Radio inicial: 1 sector alrededor del jugador (hasta 3 × 3 sectores cargados).
 
-## Arquitectura visual híbrida
-1. **3D cercano:** calles transitables, aceras, edificios importantes, parques, plazas, interiores accesibles, vehículos y personajes.
-2. **2D y geometría simplificada distante:** horizonte, campos, vegetación lejana, fachadas de fondo y zonas que no requieren exploración.
-3. **Transiciones invisibles:** impostores/atlas para objetos lejanos y sustitución gradual por modelos 3D.
-4. **LOD:** varias versiones de edificios, árboles y objetos; colisiones sólo en elementos próximos y relevantes.
-5. **Streaming por sectores:** dividir el mapa en celdas; cargar el sector actual y un anillo vecino, liberar sectores lejanos. Los datos permanecen locales.
-6. **Presupuestos móviles:** limitar luces dinámicas, sombras, transparencias, densidad de peatones/tráfico y resolución de sombras según el dispositivo.
+## Generación de los datos
+Desde la raíz del repositorio, durante el desarrollo y con conexión:
+```bash
+python3 tools/build_osm_chunks.py
+```
+El script consulta OpenStreetMap una vez, localiza la relación administrativa, reconstruye su contorno, filtra calles y edificios por el polígono municipal y genera `world/manifest.json` más archivos independientes en `world/chunks/`. Si no encuentra el contorno, se detiene en vez de presentar un rectángulo aproximado como si fuera el municipio.
 
-## Estructura de datos propuesta
-- world/manifest.json: límites, tamaño de sector, origen y versión del mapa.
-- world/chunks/<x>_<z>.tres: edificios, carreteras, props, puntos de interés y referencias.
-- world/poi/: parques, comercios, servicios y lugares reconocibles.
-- assets/buildings/, assets/vegetation/, assets/roads/, assets/props/: recursos optimizados.
-- Cada entidad tendrá ID estable, posición, orientación, categoría, LOD y datos de colisión.
+## Streaming dentro del juego
+`scripts/osm_chunk_streamer.gd` carga los JSON locales según la posición del jugador, construye el terreno base, segmentos de carretera con colisión y volúmenes de edificios, y libera sectores lejanos. La ejecución del juego no necesita red. Si no hay datos importados y verificados, conserva la ciudad procedural como fallback.
 
-## Fases
-### 1. Base Android
-- Controles táctiles para caminar, conducir, saltar/frenar, correr y entrar/salir.
-- Cámara orbital mediante arrastre táctil.
-- Interfaz adaptable a tamaños y orientaciones.
-- Prueba real en Android antes de decidir definitivamente el renderer y la calidad gráfica.
+## Alcance visual de esta primera iteración
+- Carreteras y caminos como segmentos 3D.
+- Edificios como volúmenes extruidos desde sus huellas OSM, usando altura/número de plantas si existen.
+- Materiales compartidos y colisiones sólo en sectores cargados.
+- El aspecto de edificios es provisional: no equivale todavía a modelos arquitectónicos realistas, fachadas exactas, interiores ni mobiliario urbano.
+- El relieve, vegetación, campos agrícolas, costa y cuerpos de agua requieren capas de datos adicionales y trabajo visual posterior.
 
-### 2. Mapa real
-- Conseguir y verificar una fuente cartográfica utilizable para calles, manzanas y caminos.
-- Construir el trazado municipal y dividirlo en sectores.
-- Revisar escala, nombres, cruces, barrios y puntos de interés; no presentar la ciudad procedural como si fuera el municipio real.
-- Añadir modelos 3D y texturas optimizadas.
+## Rendimiento
+- Sectores de 1 km, radio inicial de 1.
+- Próximas optimizaciones: LOD por distancia, instanciación por lotes, culling, simplificación de geometría y densidad adaptativa.
 
-### 3. Rendimiento y persistencia
-- LOD, culling, carga/descarga de sectores y colisiones por proximidad.
-- Perfiles gráficos bajo/medio/alto.
-- Ampliar el guardado local actual (última posición) para incluir vehículo, ajustes y progreso; mantener versionado y recuperación ante archivos dañados.
+## Licencias
+Los datos se obtienen de OpenStreetMap y deben atribuirse como “© OpenStreetMap contributors” y distribuirse respetando ODbL 1.0. La licencia de los datos es independiente de la licencia MIT del código base.
 
-### 4. Contenido
-- Ciclo día/noche y clima ligero.
-- Interiores seleccionados, comercios, parques y actividades.
-- Sonido ambiental y de vehículos, misiones y actividades opcionales.
-
-## Estado de esta entrega
-- Se incorpora una primera capa de controles táctiles que reutiliza la entrada de teclado existente.
-- Se incorpora giro de cámara mediante arrastre táctil.
-- Se añade guardado local de la última posición y recuperación al volver a abrir el juego.
-- Se documenta la arquitectura híbrida y el plan de mapa/streaming.
-- Aún no hay mapa municipal real, APK/AAB verificada ni prueba de rendimiento en un teléfono. No debe anunciarse como terminado hasta validar esas partes.
+## Estado comprobable
+El cargador y el importador están en el código. El manifiesto inicial marca `boundary_verified: false`, por lo que el mapa OSM no se activa todavía. Para activarlo, el importador debe localizar el límite administrativo y generar los sectores reales. No se debe anunciar el mapa municipal como terminado hasta validar cobertura, escala, calles y edificios.

@@ -1,4 +1,4 @@
-[gd_scene load_steps=14 format=3]
+[gd_scene load_steps=15 format=3]
 
 [ext_resource type="Script" path="res://scripts/game.gd" id="1_game"]
 [ext_resource type="Script" path="res://scripts/city.gd" id="2_city"]
@@ -10,6 +10,7 @@
 [ext_resource type="Script" path="res://scripts/peds.gd" id="8_peds"]
 [ext_resource type="Script" path="res://scripts/props.gd" id="9_props"]
 [ext_resource type="Script" path="res://scripts/parked_cars.gd" id="10_parked"]
+[ext_resource type="Script" path="res://scripts/osm_chunk_streamer.gd" id="11_osm"]
 
 [sub_resource type="ProceduralSkyMaterial" id="Sky_mat"]
 sky_top_color = Color(0.32, 0.48, 0.72, 1)
@@ -115,3 +116,6 @@ theme_override_constants/shadow_offset_x = 1
 theme_override_constants/shadow_offset_y = 1
 theme_override_font_sizes/font_size = 16
 text = "WASD  move / drive / fly      E  enter / exit      SHIFT  run / boost / heli down      SPACE  jump / brake / heli up      F  punch      R  respawn      ESC  cursor"
+
+[node name="OSMWorld" type="Node3D" parent="."]
+script = ExtResource("11_osm")
