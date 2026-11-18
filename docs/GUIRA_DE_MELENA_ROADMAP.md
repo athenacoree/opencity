@@ -56,3 +56,7 @@ La lectura de alturas y plantas acepta ahora correctamente decimales como `3.5 m
 
 ## Agua y espacios de ocio
 El importador incluye también polígonos OSM de ocio (parques, jardines, áreas deportivas y espacios recreativos) y vías de agua lineales. Los canales y cursos etiquetados se representan como superficies azules sencillas sin colisión; las áreas recreativas usan una capa de terreno diferenciada. La cantidad de segmentos de agua queda en `waterway_segments` en el manifiesto.
+
+
+## Geometría de huellas y continuidad de sectores
+Los polígonos de uso del suelo que cruzan límites de sectores se recortan contra cada cuadrícula de 1 km durante la importación. Así, cada sector contiene sólo su fragmento y no depende de que el centroide del polígono caiga dentro de él. Los edificios se dibujan siguiendo la huella poligonal OSM, con cubierta triangulada y paredes; la colisión se mantiene como caja simplificada para limitar el coste físico. Esta mejora visual todavía requiere validación dentro del motor Godot.

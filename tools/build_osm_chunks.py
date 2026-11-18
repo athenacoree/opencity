@@ -150,6 +150,60 @@ def local_xy(lon: float, lat: float) -> tuple[float, float]:
 def chunk_key(x: float, z: float) -> str:
     return f"{math.floor(x / CHUNK_SIZE)}_{math.floor(z / CHUNK_SIZE)}"
 
+def clip_polygon_to_rect(
+    points: list[list[float]], min_x: float, min_z: float, max_x: float, max_z: float
+) -> list[list[float]]:
+    """Clip an X/Z polygon to one sector rectangle (Sutherland-Hodgman)."""
+    polygon = [[float(p[0]), float(p[1])] for p in points if len(p) >= 2]
+    if len(polygon) > 1 and polygon[0] == polygon[-1]:
+        polygon.pop()
+
+    def clip_edge(poly: list[list[float]], inside, intersect) -> list[list[float]]:
+        if not poly:
+            return []
+        output: list[list[float]] = []
+        previous = poly[-1]
+        previous_inside = inside(previous)
+        for current in poly:
+            current_inside = inside(current)
+            if current_inside:
+                if not previous_inside:
+                    output.append(intersect(previous, current))
+                output.append(current)
+            elif previous_inside:
+                output.append(intersect(previous, current))
+            previous, previous_inside = current, current_inside
+        return output
+
+    def vertical(x_edge: float):
+        def intersect(a, b):
+            dx = b[0] - a[0]
+            t = 0.0 if abs(dx) < 1e-12 else (x_edge - a[0]) / dx
+            return [x_edge, a[1] + (b[1] - a[1]) * t]
+        return intersect
+
+    def horizontal(z_edge: float):
+        def intersect(a, b):
+            dz = b[1] - a[1]
+            t = 0.0 if abs(dz) < 1e-12 else (z_edge - a[1]) / dz
+            return [a[0] + (b[0] - a[0]) * t, z_edge]
+        return intersect
+
+    polygon = clip_edge(polygon, lambda p: p[0] >= min_x, vertical(min_x))
+    polygon = clip_edge(polygon, lambda p: p[0] <= max_x, vertical(max_x))
+    polygon = clip_edge(polygon, lambda p: p[1] >= min_z, horizontal(min_z))
+    polygon = clip_edge(polygon, lambda p: p[1] <= max_z, horizontal(max_z))
+    if len(polygon) < 3:
+        return []
+    area = abs(sum(
+        polygon[i][0] * polygon[(i + 1) % len(polygon)][1]
+        - polygon[(i + 1) % len(polygon)][0] * polygon[i][1]
+        for i in range(len(polygon))
+    )) * 0.5
+    return polygon if area > 0.01 else []
+
+
+
 
 def main() -> int:
     print("Consultando OpenStreetMap para Güira de Melena...")
@@ -257,9 +311,25 @@ def main() -> int:
                     feature["height"] = feature["levels"] * 3.2
             else:
                 feature = {
-                    "kind": "area", "osm_id": element["id"], "points": points,
+                    "kind": "area", "osm_id": element["id"],
                     "category": landuse or natural or leisure,
                 }
+                min_chunk_x = math.floor(min(xs) / CHUNK_SIZE)
+                max_chunk_x = math.floor(max(xs) / CHUNK_SIZE)
+                min_chunk_z = math.floor(min(zs) / CHUNK_SIZE)
+                max_chunk_z = math.floor(max(zs) / CHUNK_SIZE)
+                for chunk_x in range(min_chunk_x, max_chunk_x + 1):
+                    for chunk_z in range(min_chunk_z, max_chunk_z + 1):
+                        clipped = clip_polygon_to_rect(
+                            points,
+                            chunk_x * CHUNK_SIZE, chunk_z * CHUNK_SIZE,
+                            (chunk_x + 1) * CHUNK_SIZE, (chunk_z + 1) * CHUNK_SIZE,
+                        )
+                        if clipped:
+                            chunks[f"{chunk_x}_{chunk_z}"].append({
+                                **feature, "points": clipped,
+                            })
+                continue
             chunks[key].append(feature)
         elif highway or waterway:
             for index in range(len(coords) - 1):
