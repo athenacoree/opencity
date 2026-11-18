@@ -55,10 +55,16 @@ def overpass_query() -> str:
         f'way["amenity"]({bbox});'
         f'way["shop"]({bbox});'
         f'way["tourism"]({bbox});'
+        f'way["healthcare"]({bbox});'
+        f'way["office"]({bbox});'
+        f'way["craft"]({bbox});'
         f'node["amenity"]({bbox});'
         f'node["shop"]({bbox});'
         f'node["tourism"]({bbox});'
         f'node["leisure"]({bbox});'
+        f'node["healthcare"]({bbox});'
+        f'node["office"]({bbox});'
+        f'node["craft"]({bbox});'
         f'node["natural"="tree"]({bbox});'
         ');out geom;'
     )
@@ -152,6 +158,33 @@ def local_xy(lon: float, lat: float) -> tuple[float, float]:
 
 def chunk_key(x: float, z: float) -> str:
     return f"{math.floor(x / CHUNK_SIZE)}_{math.floor(z / CHUNK_SIZE)}"
+
+PRIVATE_BUILDING_TYPES = {
+    "house", "residential", "detached", "semidetached_house",
+    "terrace", "bungalow", "cabin", "farm", "static_caravan",
+}
+
+
+def public_building_label(tags: dict) -> str:
+    """Return names for public/commercial buildings, never private homes."""
+    name = str(tags.get("name", "")).strip()
+    if not name or str(tags.get("building", "")).casefold() in PRIVATE_BUILDING_TYPES:
+        return ""
+    if any(tags.get(key) for key in ("amenity", "shop", "tourism", "healthcare", "office", "craft")):
+        return name
+    if str(tags.get("building", "")).casefold() in {
+        "school", "hospital", "clinic", "university", "government", "public", "civic"
+    }:
+        return name
+    return ""
+
+
+def public_place_category(tags: dict) -> str:
+    for key in ("amenity", "healthcare", "shop", "tourism", "office", "craft", "leisure"):
+        if tags.get(key):
+            return key
+    return ""
+
 
 def clip_polygon_to_rect(
     points: list[list[float]], min_x: float, min_z: float, max_x: float, max_z: float
@@ -264,7 +297,7 @@ def main() -> int:
         tags = element.get("tags", {})
         if element.get("type") == "node":
             natural = tags.get("natural")
-            category = next((key for key in ("amenity", "shop", "tourism", "leisure") if tags.get(key)), "")
+            category = public_place_category(tags)
             if natural != "tree" and not category:
                 continue
             lat, lon = float(element["lat"]), float(element["lon"])
@@ -277,6 +310,8 @@ def main() -> int:
                 "points": [list(local_xy(lon, lat))],
                 "category": natural if kind == "vegetation" else category,
                 "name": tags.get("name", ""),
+                "place_type": tags.get(category, "") if category else "",
+                "species": tags.get("species", tags.get("species:en", "")),
             })
             continue
         if element.get("type") != "way":
@@ -292,9 +327,12 @@ def main() -> int:
         amenity = tags.get("amenity")
         shop = tags.get("shop")
         tourism = tags.get("tourism")
+        healthcare = tags.get("healthcare")
+        office = tags.get("office")
+        craft = tags.get("craft")
         waterway = tags.get("waterway")
         is_area = bool(landuse or natural in ("water", "wood", "scrub", "wetland") or leisure)
-        is_poi = bool(amenity or shop or tourism)
+        is_poi = bool(amenity or shop or tourism or healthcare or office or craft)
         if not highway and not building and not is_area and not is_poi:
             continue
         coords = [(float(p["lon"]), float(p["lat"])) for p in geometry]
@@ -313,6 +351,8 @@ def main() -> int:
                     "building": building,
                     "levels": safe_number(tags.get("building:levels", 1), 1.0),
                     "height": safe_number(tags.get("height", 0), 0.0),
+                    "name": public_building_label(tags),
+                    "place_type": public_place_category(tags),
                 }
                 if feature["height"] <= 0:
                     feature["height"] = feature["levels"] * 3.2
@@ -341,7 +381,8 @@ def main() -> int:
                 chunks[key].append({
                     "kind": "poi", "osm_id": element["id"],
                     "points": [[sum(xs) / len(xs), sum(zs) / len(zs)]],
-                    "category": "amenity" if amenity else ("shop" if shop else "tourism"),
+                    "category": public_place_category(tags),
+                    "place_type": tags.get(public_place_category(tags), ""),
                     "name": tags.get("name", ""),
                 })
                 continue
@@ -398,6 +439,8 @@ def main() -> int:
             "buildings": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "building"),
             "areas": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "area"),
             "points_of_interest": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "poi"),
+            "named_public_places": sum(1 for fs in chunks.values() for f in fs if f.get("kind") == "poi" and f.get("name")),
+            "named_public_buildings": sum(1 for fs in chunks.values() for f in fs if f.get("kind") == "building" and f.get("name")),
             "trees": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "vegetation"),
             "waterway_segments": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "waterway"),
         },
