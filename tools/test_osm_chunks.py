@@ -1,4 +1,6 @@
 import unittest
+import json
+from pathlib import Path
 import urllib.error
 from unittest.mock import MagicMock, patch
 
@@ -6,6 +8,26 @@ import build_osm_chunks as importer
 
 
 class OSMImporterTests(unittest.TestCase):
+    def test_cuban_life_config_has_local_economy_and_currency(self):
+        config_path = Path(__file__).resolve().parents[1] / "world" / "cuba_life_config.json"
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+        self.assertEqual(config["world"]["municipality"], "Güira de Melena")
+        self.assertEqual(config["economy"]["currency"], "CUP")
+        self.assertGreater(config["world"]["base_exchange_cup_per_usd"], 0)
+        self.assertTrue(config["economy"]["jobs"])
+        self.assertTrue(config["economy"]["products"])
+
+    def test_cuban_life_config_includes_house_vehicle_and_story_choices(self):
+        config_path = Path(__file__).resolve().parents[1] / "world" / "cuba_life_config.json"
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+        self.assertGreaterEqual(len(config["houses"]), 3)
+        vehicle_names = {item["name"] for item in config["vehicles"]}
+        self.assertIn("Lada 2107", vehicle_names)
+        self.assertIn("Kia Picanto", vehicle_names)
+        self.assertIn("Bicicleta", vehicle_names)
+        self.assertTrue(config["story"]["intro"])
+        self.assertGreaterEqual(len(config["story"]["missions"]), 4)
+
     def test_fetch_osm_retries_temporary_http_errors(self):
         response = MagicMock()
         response.__enter__.return_value = response

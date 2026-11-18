@@ -82,3 +82,11 @@ En el render se añaden aceras ligeras a calles urbanas, materiales diferenciado
 
 ## Cobertura ampliada de servicios y vegetación
 La consulta OSM incluye ahora etiquetas públicas adicionales: education, public_transport, social_facility y emergency, tanto en nodos como en vías. Se mantienen los filtros de nombres para excluir viviendas privadas y datos de residentes. Los árboles importan especie, género, taxón, tipo de hoja y altura cuando están disponibles; el modelo 3D usa esas etiquetas para distinguir palmeras y ajustar la escala, con valores prudentes cuando faltan medidas.
+
+
+## Simulación de vida cotidiana cubana (primera base jugable)
+Se incorpora una capa de simulación offline y configurable en `world/cuba_life_config.json` y `scripts/cuba_life_simulation.gd`. El reloj del mundo avanza, la electricidad rota por sectores de 1 km, la cobertura móvil simulada baja en sectores sin servicio eléctrico y en zonas alejadas, y los comercios respetan horarios (incluidos puestos nocturnos). La economía usa CUP y USD, con tipo de cambio y precios variables dentro del juego; los salarios mensuales se definen por ocupación. Estas cifras son parámetros ficticios de balance, no cotizaciones ni estadísticas oficiales actuales.
+
+La configuración incluye una flota objetivo inspirada en vehículos vistos en Cuba (Lada, Chevrolet clásico, Kia Picanto, Hyundai, motos, ciclomotores y bicicletas), tres ubicaciones iniciales de vivienda seleccionables y una primera línea narrativa no violenta: `Volver a empezar`, con misiones de barrio, transporte, cortes eléctricos, compras y puesta en marcha de un taller familiar. El perfil guarda vivienda, oficio, dinero y avance de misión en almacenamiento local. La HUD muestra hora, electricidad de la zona, señal y saldo CUP.
+
+**Límite de esta iteración:** los vehículos y viviendas están definidos como catálogo/datos; todavía no se han conectado todos a modelos 3D, conducción, interiores, puntos de compra ni una pantalla de selección. La electricidad y la señal son simulaciones por sector, no telemetría real ni reconstrucción de un calendario real de apagones. No se han probado los scripts en el editor/runtime Godot ni en Android.
