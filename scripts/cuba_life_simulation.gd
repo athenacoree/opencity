@@ -161,6 +161,10 @@ func is_shop_open(shop_id: String) -> bool:
 	return false
 
 
+func get_house_options() -> Array:
+	return config.get("houses", [])
+
+
 func select_house(house_id: String) -> bool:
 	for house in config.get("houses", []):
 		if str(house.get("id", "")) == house_id:
@@ -210,4 +214,4 @@ func get_hud_summary(position: Vector3) -> String:
 
 
 func _format_money(value: int) -> String:
-	return String.num_int64(value).reverse().insert(",", 3).reverse() if value >= 1000 else str(value)
+	return str(value)
