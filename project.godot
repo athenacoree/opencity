@@ -12,6 +12,7 @@ config/features=PackedStringArray("4.7", "Forward Plus")
 [autoload]
 
 DevCapture="*res://scripts/dev_capture.gd"
+LocalSave="*res://scripts/local_save.gd"
 
 [display]
 
