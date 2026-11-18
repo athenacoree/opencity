@@ -60,3 +60,7 @@ El importador incluye también polígonos OSM de ocio (parques, jardines, áreas
 
 ## Geometría de huellas y continuidad de sectores
 Los polígonos de uso del suelo que cruzan límites de sectores se recortan contra cada cuadrícula de 1 km durante la importación. Así, cada sector contiene sólo su fragmento y no depende de que el centroide del polígono caiga dentro de él. Los edificios se dibujan siguiendo la huella poligonal OSM, con cubierta triangulada y paredes; la colisión se mantiene como caja simplificada para limitar el coste físico. Esta mejora visual todavía requiere validación dentro del motor Godot.
+
+
+## Optimización de colisiones de carretera
+Las tiras visuales de carretera ya no crean un `StaticBody3D` y una forma física por cada segmento OSM. La superficie base de cada sector mantiene la colisión continua para caminar y conducir; las carreteras se dibujan como mallas sin colisión propia. Esto reduce la cantidad de objetos físicos activos cuando se cargan varios miles de segmentos. Debe medirse en Godot/Android antes de fijar el perfil final de rendimiento.

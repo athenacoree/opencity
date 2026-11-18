@@ -163,22 +163,16 @@ func _build_road_segment(parent: Node3D, a: Variant, b: Variant, highway: String
 		width = 7.0
 	elif highway in ["service", "track", "path", "footway"]:
 		width = 3.0
-	var body := StaticBody3D.new()
-	body.position = (start + finish) * 0.5
-	body.rotation.y = atan2(delta.x, delta.z)
-	var mesh := MeshInstance3D.new()
+	# The sector ground already provides continuous collision. Road strips are
+	# visual-only, avoiding thousands of redundant physics bodies/shapes.
+	var road := MeshInstance3D.new()
 	var box := BoxMesh.new()
 	box.size = Vector3(width, 0.12, length + 0.35)
-	mesh.mesh = box
-	mesh.material_override = _road_material
-	body.add_child(mesh)
-	var collision := CollisionShape3D.new()
-	var shape := BoxShape3D.new()
-	shape.size = Vector3(width, 0.18, length + 0.35)
-	collision.shape = shape
-	body.add_child(collision)
-	parent.add_child(body)
-
+	road.mesh = box
+	road.material_override = _road_material
+	road.position = (start + finish) * 0.5
+	road.rotation.y = atan2(delta.x, delta.z)
+	parent.add_child(road)
 
 func _build_waterway_segment(parent: Node3D, a: Variant, b: Variant) -> void:
 	if not a is Array or not b is Array or a.size() < 2 or b.size() < 2:
