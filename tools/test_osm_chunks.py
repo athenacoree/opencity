@@ -8,6 +8,21 @@ import build_osm_chunks as importer
 
 
 class OSMImporterTests(unittest.TestCase):
+    def test_cuban_story_starts_at_hospital_and_has_safe_mission_paths(self):
+        config_path = Path(__file__).resolve().parents[1] / "world" / "cuba_life_config.json"
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+        missions = config["story"]["missions"]
+        self.assertEqual(missions[0]["id"], "hospital_news")
+        self.assertEqual(missions[1]["id"], "friend_arrives")
+        self.assertEqual(missions[2]["id"], "rental_motorbike")
+        self.assertTrue(config["story"]["branches"])
+
+    def test_power_outages_are_configured_at_block_scale(self):
+        config_path = Path(__file__).resolve().parents[1] / "world" / "cuba_life_config.json"
+        config = json.loads(config_path.read_text(encoding="utf-8"))
+        self.assertEqual(config["world"]["outage_block_size_m"], 100)
+        self.assertGreaterEqual(config["world"]["outage_share_of_blocks"], 0.0)
+
     def test_cuban_life_config_has_local_economy_and_currency(self):
         config_path = Path(__file__).resolve().parents[1] / "world" / "cuba_life_config.json"
         config = json.loads(config_path.read_text(encoding="utf-8"))
