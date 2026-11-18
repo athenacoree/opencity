@@ -1,26 +1,28 @@
 extends CanvasLayer
-## Readout for whatever the player is currently controlling, plus the
-## context prompt for getting in and out of cars.
+## Readout for the active player/vehicle and contextual enter/exit prompt.
 
 @onready var _speed: Label = $Speed
 @onready var _prompt: Label = $Prompt
-
 var _game: Node
-
 
 func _ready() -> void:
 	_game = get_tree().get_first_node_in_group("game")
-
+	if OS.has_feature("mobile") or DisplayServer.is_touchscreen_available():
+		var touch_layer := Control.new()
+		touch_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+		touch_layer.set_script(preload("res://scripts/mobile_controls.gd"))
+		add_child(touch_layer)
+		var controls_hint := get_node_or_null("Controls") as Label
+		if controls_hint:
+			controls_hint.hide()
 
 func _process(_delta: float) -> void:
 	if _game == null:
 		_game = get_tree().get_first_node_in_group("game")
 		return
-
 	var active: Node = _game.get_active()
 	if active == null:
 		return
-
 	if _game.driving != null:
 		_speed.text = "%d km/h" % roundi(active.get_speed_kmh())
 		if active.boosting:

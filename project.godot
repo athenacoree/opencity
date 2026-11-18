@@ -1,12 +1,11 @@
 ; Engine configuration file.
-; Open this project by pointing Godot at this folder.
 
 config_version=5
 
 [application]
 
-config/name="OpenCity"
-config/description="Open-world prototype. Everything here is placeholder - built to be replaced."
+config/name="Güira de Melena - Mundo Abierto"
+config/description="Prototipo de mundo abierto Android; mapa municipal real y arte final en desarrollo."
 run/main_scene="res://scenes/world.tscn"
 config/features=PackedStringArray("4.7", "Forward Plus")
 
