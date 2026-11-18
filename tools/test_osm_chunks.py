@@ -30,6 +30,13 @@ class OSMImporterTests(unittest.TestCase):
         x, z = importer.local_xy(importer.ORIGIN_LON, importer.ORIGIN_LAT)
         self.assertEqual(importer.chunk_key(x, z), "0_0")
 
+    def test_polygon_poi_uses_centroid_in_expected_sector(self):
+        points = [[100, 100], [200, 100], [200, 200], [100, 200]]
+        centre = [sum(p[0] for p in points) / len(points),
+                  sum(p[1] for p in points) / len(points)]
+        self.assertEqual(centre, [150.0, 150.0])
+        self.assertEqual(importer.chunk_key(*centre), "0_0")
+
     def test_area_polygon_is_clipped_into_each_overlapped_chunk(self):
         polygon = [[900, 100], [1100, 100], [1100, 300], [900, 300]]
         west = importer.clip_polygon_to_rect(polygon, 0, 0, 1000, 1000)

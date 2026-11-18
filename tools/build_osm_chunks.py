@@ -52,6 +52,9 @@ def overpass_query() -> str:
         f'way["natural"~"water|wood|scrub|wetland"]({bbox});'
         f'way["waterway"]({bbox});'
         f'way["leisure"]({bbox});'
+        f'way["amenity"]({bbox});'
+        f'way["shop"]({bbox});'
+        f'way["tourism"]({bbox});'
         f'node["amenity"]({bbox});'
         f'node["shop"]({bbox});'
         f'node["tourism"]({bbox});'
@@ -286,9 +289,13 @@ def main() -> int:
         landuse = tags.get("landuse")
         natural = tags.get("natural")
         leisure = tags.get("leisure")
+        amenity = tags.get("amenity")
+        shop = tags.get("shop")
+        tourism = tags.get("tourism")
         waterway = tags.get("waterway")
         is_area = bool(landuse or natural in ("water", "wood", "scrub", "wetland") or leisure)
-        if not highway and not building and not is_area:
+        is_poi = bool(amenity or shop or tourism)
+        if not highway and not building and not is_area and not is_poi:
             continue
         coords = [(float(p["lon"]), float(p["lat"])) for p in geometry]
         if building or is_area:
@@ -309,7 +316,7 @@ def main() -> int:
                 }
                 if feature["height"] <= 0:
                     feature["height"] = feature["levels"] * 3.2
-            else:
+            elif is_area:
                 feature = {
                     "kind": "area", "osm_id": element["id"],
                     "category": landuse or natural or leisure,
@@ -329,6 +336,14 @@ def main() -> int:
                             chunks[f"{chunk_x}_{chunk_z}"].append({
                                 **feature, "points": clipped,
                             })
+                continue
+            elif is_poi:
+                chunks[key].append({
+                    "kind": "poi", "osm_id": element["id"],
+                    "points": [[sum(xs) / len(xs), sum(zs) / len(zs)]],
+                    "category": "amenity" if amenity else ("shop" if shop else "tourism"),
+                    "name": tags.get("name", ""),
+                })
                 continue
             chunks[key].append(feature)
         elif highway or waterway:
