@@ -1,0 +1,24 @@
+name: Test OSM importer
+
+on:
+  pull_request:
+    paths:
+      - "tools/build_osm_chunks.py"
+      - "tools/test_osm_chunks.py"
+      - ".github/workflows/test-osm-importer.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  test-importer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Run importer unit tests
+        run: python3 -m unittest discover -s tools -p 'test_*.py' -v
