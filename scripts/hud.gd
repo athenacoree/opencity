@@ -57,6 +57,13 @@ func _ready() -> void:
 		_mission_status.add_theme_constant_override("shadow_offset_x", 2)
 		_mission_status.add_theme_constant_override("shadow_offset_y", 2)
 		add_child(_mission_status)
+		if not _life_simulation.intro_seen:
+			var intro_dialog := AcceptDialog.new()
+			intro_dialog.title = _life_simulation.get_story_title()
+			intro_dialog.dialog_text = _life_simulation.get_story_intro()
+			intro_dialog.confirmed.connect(_life_simulation.mark_intro_seen)
+			add_child(intro_dialog)
+			intro_dialog.call_deferred("popup_centered", Vector2i(560, 300))
 		var selected_house := str(_life_simulation.selected_house_id)
 		if selected_house != "":
 			var selected_index := _house_ids.find(selected_house)
@@ -82,7 +89,9 @@ func _on_job_selected(index: int) -> void:
 func _process(_delta: float) -> void:
 	if _game == null:
 		_game = get_tree().get_first_node_in_group("game")
-	if _life_simulation != null and _game != null:
+	if _game == null:
+		return
+	if _life_simulation != null:
 		_life_status.text = _life_simulation.get_hud_summary(_game.get_active().global_position)
 		var mission: Dictionary = _life_simulation.get_current_mission()
 		if _mission_status != null:
