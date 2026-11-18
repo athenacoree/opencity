@@ -296,6 +296,8 @@ def main() -> int:
             "roads": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "road"),
             "buildings": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "building"),
             "areas": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "area"),
+            "points_of_interest": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "poi"),
+            "trees": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "vegetation"),
         },
         "generated_unix": int(time.time()),
     }
