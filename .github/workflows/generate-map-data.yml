@@ -1,0 +1,61 @@
+name: Generate Güira de Melena map data
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/generate-map-data.yml"
+      - "tools/build_osm_chunks.py"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: guira-map-data
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generate offline OSM sectors
+        run: python3 tools/build_osm_chunks.py
+
+      - name: Validate generated map manifest
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          manifest = json.loads(Path("world/manifest.json").read_text(encoding="utf-8"))
+          assert manifest.get("boundary_verified") is True, "Municipal boundary was not verified"
+          counts = manifest.get("feature_counts", {})
+          assert counts.get("chunks", 0) > 0, "No map sectors were generated"
+          assert counts.get("roads", 0) > 0, "No road segments were generated"
+          print(json.dumps(counts, ensure_ascii=False, indent=2))
+          PY
+
+      - name: Commit generated offline map
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add world/manifest.json world/chunks/
+          if git diff --cached --quiet; then
+            echo "No map data changes to commit."
+            exit 0
+          fi
+          git commit -m "Generate Güira de Melena offline map sectors"
+          git push origin HEAD:main
