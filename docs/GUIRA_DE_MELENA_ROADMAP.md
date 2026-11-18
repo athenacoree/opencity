@@ -68,3 +68,7 @@ Las tiras visuales de carretera ya no crean un `StaticBody3D` y una forma físic
 
 ## Calidad adaptativa en móviles
 En dispositivos táctiles/móviles el juego vigila el FPS en ventanas de cinco segundos. Si permanece por debajo de 28 FPS durante tres ventanas, reduce temporalmente SSAO, glow, sombras direccionales y MSAA para aliviar la GPU. Si supera 42 FPS durante seis ventanas, restaura los valores originales. En escritorio no modifica la calidad. Es un mecanismo preventivo que requiere medir y ajustar umbrales en dispositivos Android reales.
+
+
+## Puntos de interés con huella poligonal
+Además de los nodos OSM, el importador recoge establecimientos y servicios etiquetados como áreas (amenity, shop y tourism en ways). Se crea un punto de referencia dentro del sector para que puedan aparecer en el mundo y se conserve su categoría y nombre. No se inventan nombres ni ubicaciones; la cobertura depende de OSM.
