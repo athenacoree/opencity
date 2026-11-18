@@ -4,69 +4,275 @@
     "province": "Artemisa",
     "country": "Cuba",
     "time_scale_game_minutes_per_real_second": 0.5,
-    "outage_rotation_game_minutes": 180,
+    "outage_rotation_game_minutes": 120,
     "outage_share_of_sectors": 0.4,
-    "base_exchange_cup_per_usd": 420.0,
+    "base_exchange_cup_per_usd": 420,
     "exchange_daily_variation": 0.025,
-    "price_daily_variation": 0.018
+    "price_daily_variation": 0.018,
+    "outage_block_size_m": 100,
+    "outage_share_of_blocks": 0.42
   },
   "economy": {
     "currency": "CUP",
     "secondary_currency": "USD",
     "starting_money_cup": 3500,
     "jobs": [
-      {"id": "teacher", "name": "Profesor/a", "monthly_salary_cup": 5280},
-      {"id": "doctor", "name": "Médico/a", "monthly_salary_cup": 6500},
-      {"id": "nurse", "name": "Enfermero/a", "monthly_salary_cup": 4800},
-      {"id": "shop_worker", "name": "Dependiente", "monthly_salary_cup": 3900},
-      {"id": "mechanic", "name": "Mecánico/a", "monthly_salary_cup": 6200},
-      {"id": "driver", "name": "Chofer", "monthly_salary_cup": 5100},
-      {"id": "farmer", "name": "Agricultor/a", "monthly_salary_cup": 5600},
-      {"id": "private_worker", "name": "Trabajador/a por cuenta propia", "monthly_salary_cup": 8500}
+      {
+        "id": "teacher",
+        "name": "Profesor/a",
+        "monthly_salary_cup": 5280
+      },
+      {
+        "id": "doctor",
+        "name": "Médico/a",
+        "monthly_salary_cup": 6500
+      },
+      {
+        "id": "nurse",
+        "name": "Enfermero/a",
+        "monthly_salary_cup": 4800
+      },
+      {
+        "id": "shop_worker",
+        "name": "Dependiente",
+        "monthly_salary_cup": 3900
+      },
+      {
+        "id": "mechanic",
+        "name": "Mecánico/a",
+        "monthly_salary_cup": 6200
+      },
+      {
+        "id": "driver",
+        "name": "Chofer",
+        "monthly_salary_cup": 5100
+      },
+      {
+        "id": "farmer",
+        "name": "Agricultor/a",
+        "monthly_salary_cup": 5600
+      },
+      {
+        "id": "private_worker",
+        "name": "Trabajador/a por cuenta propia",
+        "monthly_salary_cup": 8500
+      }
     ],
     "products": [
-      {"id": "bread", "name": "Pan", "unit": "unidad", "base_price_cup": 15},
-      {"id": "rice", "name": "Arroz", "unit": "libra", "base_price_cup": 250},
-      {"id": "eggs", "name": "Huevos", "unit": "unidad", "base_price_cup": 85},
-      {"id": "milk", "name": "Leche", "unit": "litro", "base_price_cup": 300},
-      {"id": "cooking_oil", "name": "Aceite", "unit": "litro", "base_price_cup": 950},
-      {"id": "gasoline", "name": "Combustible", "unit": "litro", "base_price_cup": 320},
-      {"id": "phone_data", "name": "Paquete de datos", "unit": "paquete", "base_price_cup": 600}
+      {
+        "id": "bread",
+        "name": "Pan",
+        "unit": "unidad",
+        "base_price_cup": 15
+      },
+      {
+        "id": "rice",
+        "name": "Arroz",
+        "unit": "libra",
+        "base_price_cup": 250
+      },
+      {
+        "id": "eggs",
+        "name": "Huevos",
+        "unit": "unidad",
+        "base_price_cup": 85
+      },
+      {
+        "id": "milk",
+        "name": "Leche",
+        "unit": "litro",
+        "base_price_cup": 300
+      },
+      {
+        "id": "cooking_oil",
+        "name": "Aceite",
+        "unit": "litro",
+        "base_price_cup": 950
+      },
+      {
+        "id": "gasoline",
+        "name": "Combustible",
+        "unit": "litro",
+        "base_price_cup": 320
+      },
+      {
+        "id": "phone_data",
+        "name": "Paquete de datos",
+        "unit": "paquete",
+        "base_price_cup": 600
+      }
     ]
   },
   "shops": [
-    {"id": "bakery", "name": "Panadería", "opens": 6, "closes": 19},
-    {"id": "market", "name": "Mercado", "opens": 8, "closes": 18},
-    {"id": "cafeteria", "name": "Cafetería", "opens": 7, "closes": 22},
-    {"id": "restaurant", "name": "Restaurante", "opens": 11, "closes": 23},
-    {"id": "workshop", "name": "Taller", "opens": 8, "closes": 17},
-    {"id": "night_kiosk", "name": "Puesto nocturno", "opens": 18, "closes": 2}
+    {
+      "id": "bakery",
+      "name": "Panadería",
+      "opens": 6,
+      "closes": 19
+    },
+    {
+      "id": "market",
+      "name": "Mercado",
+      "opens": 8,
+      "closes": 18
+    },
+    {
+      "id": "cafeteria",
+      "name": "Cafetería",
+      "opens": 7,
+      "closes": 22
+    },
+    {
+      "id": "restaurant",
+      "name": "Restaurante",
+      "opens": 11,
+      "closes": 23
+    },
+    {
+      "id": "workshop",
+      "name": "Taller",
+      "opens": 8,
+      "closes": 17
+    },
+    {
+      "id": "night_kiosk",
+      "name": "Puesto nocturno",
+      "opens": 18,
+      "closes": 2
+    }
   ],
   "vehicles": [
-    {"id": "lada_2107", "name": "Lada 2107", "type": "car", "era": "clásico"},
-    {"id": "lada_niva", "name": "Lada Niva", "type": "car", "era": "clásico"},
-    {"id": "chevrolet_50s", "name": "Chevrolet clásico", "type": "car", "era": "clásico"},
-    {"id": "kia_picanto", "name": "Kia Picanto", "type": "car", "era": "moderno"},
-    {"id": "hyundai_atos", "name": "Hyundai Atos", "type": "car", "era": "moderno"},
-    {"id": "motorcycle", "name": "Motorina", "type": "motorcycle", "era": "actual"},
-    {"id": "moped", "name": "Ciclomotor", "type": "moped", "era": "actual"},
-    {"id": "bicycle", "name": "Bicicleta", "type": "bicycle", "era": "actual"},
-    {"id": "cargo_bicycle", "name": "Bicicleta de carga", "type": "bicycle", "era": "actual"}
+    {
+      "id": "lada_2107",
+      "name": "Lada 2107",
+      "type": "car",
+      "era": "clásico"
+    },
+    {
+      "id": "lada_niva",
+      "name": "Lada Niva",
+      "type": "car",
+      "era": "clásico"
+    },
+    {
+      "id": "chevrolet_50s",
+      "name": "Chevrolet clásico",
+      "type": "car",
+      "era": "clásico"
+    },
+    {
+      "id": "kia_picanto",
+      "name": "Kia Picanto",
+      "type": "car",
+      "era": "moderno"
+    },
+    {
+      "id": "hyundai_atos",
+      "name": "Hyundai Atos",
+      "type": "car",
+      "era": "moderno"
+    },
+    {
+      "id": "motorcycle",
+      "name": "Motorina",
+      "type": "motorcycle",
+      "era": "actual"
+    },
+    {
+      "id": "moped",
+      "name": "Ciclomotor",
+      "type": "moped",
+      "era": "actual"
+    },
+    {
+      "id": "bicycle",
+      "name": "Bicicleta",
+      "type": "bicycle",
+      "era": "actual"
+    },
+    {
+      "id": "cargo_bicycle",
+      "name": "Bicicleta de carga",
+      "type": "bicycle",
+      "era": "actual"
+    }
   ],
   "houses": [
-    {"id": "town_center", "name": "Casa en el centro", "description": "Cerca de comercios y servicios; más movimiento y ruido."},
-    {"id": "quiet_neighborhood", "name": "Casa en un barrio tranquilo", "description": "Calles más calmadas y desplazamientos algo mayores."},
-    {"id": "rural_edge", "name": "Casa en las afueras", "description": "Entorno rural, más espacio y trayectos largos."}
+    {
+      "id": "town_center",
+      "name": "Casa en el centro",
+      "description": "Cerca de comercios y servicios; más movimiento y ruido."
+    },
+    {
+      "id": "quiet_neighborhood",
+      "name": "Casa en un barrio tranquilo",
+      "description": "Calles más calmadas y desplazamientos algo mayores."
+    },
+    {
+      "id": "rural_edge",
+      "name": "Casa en las afueras",
+      "description": "Entorno rural, más espacio y trayectos largos."
+    }
   ],
   "story": {
-    "title": "Volver a empezar",
-    "intro": "Después de un tiempo fuera, el protagonista regresa a Güira de Melena. La familia necesita ayuda para poner en marcha un pequeño taller y organizar varios encargos del barrio. No hay un camino único: cada decisión cambia sus recursos, relaciones y oportunidades.",
+    "title": "Una carrera contra el tiempo",
+    "intro": "El protagonista vuelve a Güira de Melena y descubre que su padre está ingresado en el hospital. La familia necesita dinero para los gastos y para organizar un traslado. Desbordado, llama a su amigo de confianza. Cuando el amigo llega a casa, ambos comprenden que tendrán que apoyarse, buscar trabajo y tomar decisiones difíciles para salir adelante. El nombre del amigo lo eliges tú.",
     "missions": [
-      {"id": "first_day", "title": "Un día en casa", "description": "Elige dónde vivir, conoce a tu familia y recorre las calles cercanas.", "reward_cup": 250},
-      {"id": "the_bicycle", "title": "La bicicleta de la familia", "description": "Busca una bicicleta y completa tus primeros encargos por el barrio.", "reward_cup": 450},
-      {"id": "power_day", "title": "Cuando se va la corriente", "description": "Organiza el trabajo del taller según los horarios de electricidad de cada zona.", "reward_cup": 650},
-      {"id": "market_route", "title": "La vuelta al mercado", "description": "Compara precios, administra el presupuesto y entrega las compras.", "reward_cup": 800},
-      {"id": "open_workshop", "title": "Abrir el taller", "description": "Reúne materiales y decide qué servicios ofrecer a los vecinos.", "reward_cup": 1200}
+      {
+        "id": "hospital_news",
+        "title": "Una llamada del hospital",
+        "description": "Ve al hospital, habla con el personal médico y averigua qué necesita tu padre y cuánto tiempo tienes.",
+        "reward_cup": 250,
+        "objective_type": "visit_hospital"
+      },
+      {
+        "id": "friend_arrives",
+        "title": "Un amigo de verdad",
+        "description": "Escribe el nombre de tu amigo, encuéntralo en casa y hablen sobre cómo conseguir el dinero necesario.",
+        "reward_cup": 200,
+        "objective_type": "meet_friend"
+      },
+      {
+        "id": "rental_motorbike",
+        "title": "Una moto prestada",
+        "description": "Ve al punto de alquiler, habla con el encargado y alquila una moto para hacer los encargos del día.",
+        "reward_cup": 350,
+        "objective_type": "rent_motorbike"
+      },
+      {
+        "id": "urgent_deliveries",
+        "title": "Carrera contra el tiempo",
+        "description": "Completa entregas y trabajos legales por distintos barrios. Los apagones y la mala señal pueden cambiar tus planes.",
+        "reward_cup": 900,
+        "objective_type": "complete_deliveries"
+      },
+      {
+        "id": "medical_supplies",
+        "title": "Lo que hace falta",
+        "description": "Consulta la lista indicada por el hospital y consigue los productos permitidos en una farmacia o comercio abierto.",
+        "reward_cup": 600,
+        "objective_type": "deliver_supplies"
+      },
+      {
+        "id": "father_transfer",
+        "title": "Llegar a tiempo",
+        "description": "Organiza el traslado con el hospital y tu familia. Tus decisiones determinan cómo continúa la historia.",
+        "reward_cup": 1000,
+        "objective_type": "arrange_transfer"
+      }
+    ],
+    "friend_name_default": "Dani",
+    "branches": [
+      {
+        "id": "friend_recovers",
+        "title": "Tu amigo se recupera",
+        "description": "Si consigues ayuda a tiempo, tu amigo recibe atención y puede acompañarte en las siguientes misiones."
+      },
+      {
+        "id": "friend_needs_rest",
+        "title": "Tu amigo necesita recuperarse",
+        "description": "Si las cosas se complican, tu amigo permanece bajo atención médica y la historia continúa con tareas que puedes realizar por tu cuenta."
+      }
     ]
   }
 }

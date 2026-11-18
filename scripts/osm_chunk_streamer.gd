@@ -24,6 +24,8 @@ var _waterway_material: StandardMaterial3D
 var _area_materials: Dictionary = {}
 var _point_materials: Dictionary = {}
 var _building_materials: Dictionary = {}
+var _life_simulation: Node
+var _last_power_state := false
 
 
 func _ready() -> void:
@@ -38,6 +40,7 @@ func _ready() -> void:
 	_ground_material = _make_material(Color(0.31, 0.39, 0.25), 1.0)
 	_waterway_material = _make_material(Color(0.12, 0.36, 0.50), 0.28)
 	_player = get_parent().get_node_or_null("Player") as Node3D
+	_life_simulation = get_parent().get_node_or_null("CubaLife")
 	_load_manifest()
 	if _map_available:
 		_disable_procedural_city()
@@ -76,6 +79,7 @@ func _process(delta: float) -> void:
 		return
 	_timer = 0.0
 	_update_visible_chunks()
+	_update_neighborhood_lighting()
 
 
 func _update_visible_chunks() -> void:
@@ -92,6 +96,22 @@ func _update_visible_chunks() -> void:
 		if not wanted.has(key):
 			_loaded[key].queue_free()
 			_loaded.erase(key)
+
+
+func _update_neighborhood_lighting() -> void:
+	if _life_simulation == null or _player == null:
+		return
+	var powered: bool = _life_simulation.get_sector_power(_player.global_position)
+	if powered == _last_power_state:
+		return
+	_last_power_state = powered
+	_window_material.emission_enabled = powered
+	_window_material.emission = Color(0.92, 0.67, 0.32) if powered else Color(0, 0, 0)
+	_window_material.emission_energy_multiplier = 0.55 if powered else 0.0
+	_window_material.albedo_color = Color(0.38, 0.30, 0.18) if powered else Color(0.035, 0.045, 0.06)
+	for material in _point_materials.values():
+		if material is StandardMaterial3D and material.emission_enabled:
+			material.emission_energy_multiplier = 0.9 if powered else 0.0
 
 
 func _load_chunk(x: int, z: int, key: String) -> void:
