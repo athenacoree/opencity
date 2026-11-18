@@ -50,6 +50,11 @@ def overpass_query() -> str:
         f'way["landuse"]({bbox});'
         f'way["natural"~"water|wood|scrub"]({bbox});'
         f'way["waterway"]({bbox});'
+        f'node["amenity"]({bbox});'
+        f'node["shop"]({bbox});'
+        f'node["tourism"]({bbox});'
+        f'node["leisure"]({bbox});'
+        f'node["natural"="tree"]({bbox});'
         ');out geom;'
     )
 
@@ -114,7 +119,7 @@ def point_in_polygon(lon: float, lat: float, polygon: list[tuple[float, float]])
 
 def safe_number(value: object, default: float = 1.0) -> float:
     """Parse imperfect OSM height/level tags without aborting the whole import."""
-    match = re.search(r"[0-9]+(?:\\.[0-9]+)?", str(value or ""))
+    match = re.search(r"[0-9]+(?:\.[0-9]+)?", str(value or ""))
     if not match:
         return default
     try:
@@ -186,9 +191,26 @@ def main() -> int:
     chunks: dict[str, list[dict]] = defaultdict(list)
     seen = set()
     for element in elements:
+        tags = element.get("tags", {})
+        if element.get("type") == "node":
+            natural = tags.get("natural")
+            category = next((key for key in ("amenity", "shop", "tourism", "leisure") if tags.get(key)), "")
+            if natural != "tree" and not category:
+                continue
+            lat, lon = float(element["lat"]), float(element["lon"])
+            if not inside_boundary(lon, lat):
+                continue
+            kind = "vegetation" if natural == "tree" else "poi"
+            key = chunk_key(*local_xy(lon, lat))
+            chunks[key].append({
+                "kind": kind, "osm_id": element["id"],
+                "points": [list(local_xy(lon, lat))],
+                "category": natural if kind == "vegetation" else category,
+                "name": tags.get("name", ""),
+            })
+            continue
         if element.get("type") != "way":
             continue
-        tags = element.get("tags", {})
         geometry = element.get("geometry", [])
         if len(geometry) < 2:
             continue
