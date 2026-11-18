@@ -11,6 +11,7 @@ var _job_ids: Array[String] = []
 var _mission_status: Label
 var _house_ids: Array[String] = []
 var _life_simulation: Node
+var _friend_name_input: LineEdit
 
 func _ready() -> void:
 	_game = get_tree().get_first_node_in_group("game")
@@ -57,6 +58,18 @@ func _ready() -> void:
 		_mission_status.add_theme_constant_override("shadow_offset_x", 2)
 		_mission_status.add_theme_constant_override("shadow_offset_y", 2)
 		add_child(_mission_status)
+		_friend_name_input = LineEdit.new()
+		_friend_name_input.position = Vector2(28, 292)
+		_friend_name_input.size = Vector2(250, 40)
+		_friend_name_input.placeholder_text = "Nombre de tu amigo"
+		_friend_name_input.text = _life_simulation.get_friend_name()
+		_friend_name_input.text_submitted.connect(_on_friend_name_submitted)
+		add_child(_friend_name_input)
+		var friend_name_hint := Label.new()
+		friend_name_hint.position = Vector2(290, 296)
+		friend_name_hint.text = "Escribe el nombre y pulsa Enter"
+		friend_name_hint.add_theme_color_override("font_color", Color(1, 1, 1, 1))
+		add_child(friend_name_hint)
 		if not _life_simulation.intro_seen:
 			var intro_dialog := AcceptDialog.new()
 			intro_dialog.title = _life_simulation.get_story_title()
@@ -78,6 +91,11 @@ func _ready() -> void:
 		if controls_hint:
 			controls_hint.hide()
 
+func _on_friend_name_submitted(value: String) -> void:
+	if _life_simulation != null:
+		_life_simulation.set_friend_name(value)
+
+
 func _on_house_selected(index: int) -> void:
 	if index > 0 and index <= _house_ids.size() and _life_simulation != null:
 		_life_simulation.select_house(_house_ids[index - 1])
@@ -95,7 +113,7 @@ func _process(_delta: float) -> void:
 		_life_status.text = _life_simulation.get_hud_summary(_game.get_active().global_position)
 		var mission: Dictionary = _life_simulation.get_current_mission()
 		if _mission_status != null:
-			_mission_status.text = "Misión: " + str(mission.get("title", "Historia completada")) + "  |  " + str(mission.get("description", ""))
+			_mission_status.text = "Misión: " + str(mission.get("title", "Historia completada")) + "  |  " + str(mission.get("description", "")).replace("tu amigo", _life_simulation.get_friend_name()).replace("Un amigo", _life_simulation.get_friend_name())
 	var active: Node = _game.get_active()
 	if active == null:
 		return
