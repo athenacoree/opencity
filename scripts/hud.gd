@@ -5,11 +5,13 @@ extends CanvasLayer
 @onready var _prompt: Label = $Prompt
 var _game: Node
 var _life_status: Label
+var _house_picker: OptionButton
+var _house_ids: Array[String] = []
 var _life_simulation: Node
 
 func _ready() -> void:
 	_game = get_tree().get_first_node_in_group("game")
-	_life_simulation = get_parent().get_node_or_null("../CubaLife")
+	_life_simulation = get_parent().get_node_or_null("CubaLife")
 	_life_status = Label.new()
 	_life_status.name = "CubaLifeStatus"
 	_life_status.position = Vector2(28, 154)
@@ -20,6 +22,21 @@ func _ready() -> void:
 	_life_status.add_theme_constant_override("shadow_offset_x", 2)
 	_life_status.add_theme_constant_override("shadow_offset_y", 2)
 	add_child(_life_status)
+	if _life_simulation != null:
+		_house_picker = OptionButton.new()
+		_house_picker.position = Vector2(28, 192)
+		_house_picker.size = Vector2(330, 42)
+		_house_picker.add_item("Elegir vivienda")
+		for house in _life_simulation.get_house_options():
+			_house_ids.append(str(house.get("id", "")))
+			_house_picker.add_item(str(house.get("name", "Casa")))
+		_house_picker.item_selected.connect(_on_house_selected)
+		add_child(_house_picker)
+		var selected_house := str(_life_simulation.selected_house_id)
+		if selected_house != "":
+			var selected_index := _house_ids.find(selected_house)
+			if selected_index >= 0:
+				_house_picker.select(selected_index + 1)
 	if OS.has_feature("mobile") or DisplayServer.is_touchscreen_available():
 		var touch_layer := Control.new()
 		touch_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -28,6 +45,10 @@ func _ready() -> void:
 		var controls_hint := get_node_or_null("Controls") as Label
 		if controls_hint:
 			controls_hint.hide()
+
+func _on_house_selected(index: int) -> void:
+	if index > 0 and index <= _house_ids.size() and _life_simulation != null:
+		_life_simulation.select_house(_house_ids[index - 1])
 
 func _process(_delta: float) -> void:
 	if _game == null:
