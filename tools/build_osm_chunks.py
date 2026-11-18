@@ -173,9 +173,18 @@ PRIVATE_BUILDING_TYPES = {
 }
 
 
+def preferred_public_name(tags: dict) -> str:
+    """Prefer a locally useful public name without using owner/operator identities."""
+    for key in ("name", "name:es", "official_name", "short_name"):
+        value = str(tags.get(key, "")).strip()
+        if value:
+            return value
+    return ""
+
+
 def public_building_label(tags: dict) -> str:
     """Return names for public/commercial buildings, never private homes."""
-    name = str(tags.get("name", "")).strip()
+    name = preferred_public_name(tags)
     if not name or str(tags.get("building", "")).casefold() in PRIVATE_BUILDING_TYPES:
         return ""
     if any(tags.get(key) for key in ("amenity", "shop", "tourism", "healthcare", "office", "craft")):
@@ -317,7 +326,7 @@ def main() -> int:
                 "kind": kind, "osm_id": element["id"],
                 "points": [list(local_xy(lon, lat))],
                 "category": natural if kind == "vegetation" else category,
-                "name": tags.get("name", ""),
+                "name": preferred_public_name(tags),
                 "place_type": tags.get(category, "") if category else "",
                 "species": tags.get("species", tags.get("species:en", "")),
                 "genus": tags.get("genus", tags.get("genus:en", "")),
@@ -399,7 +408,7 @@ def main() -> int:
                     "points": [[sum(xs) / len(xs), sum(zs) / len(zs)]],
                     "category": public_place_category(tags),
                     "place_type": tags.get(public_place_category(tags), ""),
-                    "name": tags.get("name", ""),
+                    "name": preferred_public_name(tags),
                 })
                 continue
             chunks[key].append(feature)
