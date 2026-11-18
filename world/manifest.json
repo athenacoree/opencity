@@ -18,7 +18,9 @@
     "chunks": 158,
     "roads": 2972,
     "buildings": 386,
-    "areas": 171
+    "areas": 171,
+    "points_of_interest": 65,
+    "trees": 49
   },
-  "generated_unix": 1794981820
+  "generated_unix": 1794982177
 }
