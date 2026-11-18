@@ -36,7 +36,7 @@ El script consulta OpenStreetMap una vez, localiza la relación administrativa, 
 Los datos se obtienen de OpenStreetMap y deben atribuirse como “© OpenStreetMap contributors” y distribuirse respetando ODbL 1.0. La licencia de los datos es independiente de la licencia MIT del código base.
 
 ## Estado comprobable — datos generados
-La importación municipal ya se ejecutó correctamente. El manifiesto de `main` confirma el límite administrativo OSM 2576652, contrastado con la referencia de Wikimedia Commons, y contiene 158 sectores offline de 1 km, 2.972 segmentos de carretera, 386 edificios y 171 polígonos de uso del suelo/elementos naturales. Los 158 archivos JSON están presentes en `world/chunks/` (aprox. 654 KB en total).
+La importación municipal ya se ejecutó correctamente. El manifiesto de `main` confirma el límite administrativo OSM 2576652, contrastado con la referencia de Wikimedia Commons, y contiene 158 sectores offline de 1 km, 2.972 segmentos de carretera, 386 edificios, 171 polígonos de uso del suelo/elementos naturales, 65 puntos de interés y 49 árboles etiquetados. Los 158 archivos JSON están presentes en `world/chunks/` (aprox. 654 KB en total).
 
 El streamer ya puede cargar esos sectores desde archivos locales y desactivar la ciudad procedural de respaldo cuando detecta el manifiesto verificado. La importación de datos está completada; todavía falta probar el proyecto en Godot, revisar visualmente la cobertura y el encaje de los sectores, optimizar geometría/LOD y validar el rendimiento en Android. No existe todavía una APK/AAB verificada. Tampoco se debe confundir el mapa OSM generado con una reconstrucción visual de máxima fidelidad: los edificios son volúmenes básicos y la cobertura depende de las etiquetas existentes en OSM.
 
@@ -52,3 +52,7 @@ El importador también conserva polígonos OSM de uso del suelo y elementos natu
 El importador consulta también nodos OSM etiquetados como servicios (amenity), comercios (shop), turismo (tourism), ocio (leisure) y árboles individuales (natural=tree). Los guarda dentro del sector local correspondiente. El streamer dibuja marcadores sencillos para los puntos de interés y modelos de árbol de bajo coste geométrico. Los contadores `points_of_interest` y `trees` del manifiesto permiten medir la cobertura real; no se inventan ubicaciones donde OSM no tenga datos.
 
 La lectura de alturas y plantas acepta ahora correctamente decimales como `3.5 m`, con pruebas unitarias específicas.
+
+
+## Agua y espacios de ocio
+El importador incluye también polígonos OSM de ocio (parques, jardines, áreas deportivas y espacios recreativos) y vías de agua lineales. Los canales y cursos etiquetados se representan como superficies azules sencillas sin colisión; las áreas recreativas usan una capa de terreno diferenciada. La cantidad de segmentos de agua queda en `waterway_segments` en el manifiesto.

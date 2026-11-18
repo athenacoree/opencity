@@ -16,6 +16,7 @@ var _manifest: Dictionary = {}
 var _map_available := false
 var _road_material: StandardMaterial3D
 var _ground_material: StandardMaterial3D
+var _waterway_material: StandardMaterial3D
 var _area_materials: Dictionary = {}
 var _point_materials: Dictionary = {}
 
@@ -23,6 +24,7 @@ var _point_materials: Dictionary = {}
 func _ready() -> void:
 	_road_material = _make_material(Color(0.16, 0.17, 0.18), 0.94)
 	_ground_material = _make_material(Color(0.31, 0.39, 0.25), 1.0)
+	_waterway_material = _make_material(Color(0.12, 0.36, 0.50), 0.28)
 	_player = get_parent().get_node_or_null("Player") as Node3D
 	_load_manifest()
 	if _map_available:
@@ -135,6 +137,9 @@ func _build_feature(parent: Node3D, feature: Dictionary) -> void:
 	if kind == "road":
 		for i in range(points.size() - 1):
 			_build_road_segment(parent, points[i], points[i + 1], str(feature.get("highway", "residential")))
+	elif kind == "waterway":
+		for i in range(points.size() - 1):
+			_build_waterway_segment(parent, points[i], points[i + 1])
 	elif kind == "building":
 		_build_building(parent, points, feature)
 	elif kind == "area":
@@ -172,6 +177,25 @@ func _build_road_segment(parent: Node3D, a: Variant, b: Variant, highway: String
 	collision.shape = shape
 	body.add_child(collision)
 	parent.add_child(body)
+
+
+func _build_waterway_segment(parent: Node3D, a: Variant, b: Variant) -> void:
+	if not a is Array or not b is Array or a.size() < 2 or b.size() < 2:
+		return
+	var start := Vector3(float(a[0]), -0.015, float(a[1]))
+	var finish := Vector3(float(b[0]), -0.015, float(b[1]))
+	var delta := finish - start
+	var length := delta.length()
+	if length < 1.0:
+		return
+	var channel := MeshInstance3D.new()
+	var box := BoxMesh.new()
+	box.size = Vector3(2.2, 0.06, length + 0.25)
+	channel.mesh = box
+	channel.material_override = _waterway_material
+	channel.position = (start + finish) * 0.5
+	channel.rotation.y = atan2(delta.x, delta.z)
+	parent.add_child(channel)
 
 
 func _build_area(parent: Node3D, raw_points: Array, category: String) -> void:
@@ -270,6 +294,8 @@ func _area_colour(category: String) -> Color:
 			return Color(0.40, 0.41, 0.40)
 		"wetland", "marsh":
 			return Color(0.30, 0.42, 0.35)
+		"park", "garden", "playground", "pitch", "nature_reserve":
+			return Color(0.25, 0.43, 0.24)
 		_:
 			return Color(0.34, 0.40, 0.27)
 

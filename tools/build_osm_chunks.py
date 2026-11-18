@@ -49,8 +49,9 @@ def overpass_query() -> str:
         f'way["highway"]({bbox});'
         f'way["building"]({bbox});'
         f'way["landuse"]({bbox});'
-        f'way["natural"~"water|wood|scrub"]({bbox});'
+        f'way["natural"~"water|wood|scrub|wetland"]({bbox});'
         f'way["waterway"]({bbox});'
+        f'way["leisure"]({bbox});'
         f'node["amenity"]({bbox});'
         f'node["shop"]({bbox});'
         f'node["tourism"]({bbox});'
@@ -230,7 +231,9 @@ def main() -> int:
         building = tags.get("building")
         landuse = tags.get("landuse")
         natural = tags.get("natural")
-        is_area = bool(landuse or natural in ("water", "wood", "scrub", "wetland"))
+        leisure = tags.get("leisure")
+        waterway = tags.get("waterway")
+        is_area = bool(landuse or natural in ("water", "wood", "scrub", "wetland") or leisure)
         if not highway and not building and not is_area:
             continue
         coords = [(float(p["lon"]), float(p["lat"])) for p in geometry]
@@ -255,10 +258,10 @@ def main() -> int:
             else:
                 feature = {
                     "kind": "area", "osm_id": element["id"], "points": points,
-                    "category": landuse or natural,
+                    "category": landuse or natural or leisure,
                 }
             chunks[key].append(feature)
-        elif highway:
+        elif highway or waterway:
             for index in range(len(coords) - 1):
                 a, b = coords[index], coords[index + 1]
                 midpoint = ((a[0] + b[0]) * 0.5, (a[1] + b[1]) * 0.5)
@@ -272,8 +275,9 @@ def main() -> int:
                     continue
                 seen.add(signature)
                 chunks[key].append({
-                    "kind": "road", "osm_id": element["id"],
-                    "points": [list(pa), list(pb)], "highway": highway,
+                    "kind": "road" if highway else "waterway", "osm_id": element["id"],
+                    "points": [list(pa), list(pb)],
+                    "highway": highway or "", "waterway": waterway or "",
                     "name": tags.get("name", ""), "surface": tags.get("surface", ""),
                 })
 
@@ -310,6 +314,7 @@ def main() -> int:
             "areas": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "area"),
             "points_of_interest": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "poi"),
             "trees": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "vegetation"),
+            "waterway_segments": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "waterway"),
         },
         "generated_unix": int(time.time()),
     }
