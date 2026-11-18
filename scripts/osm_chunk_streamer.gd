@@ -15,6 +15,10 @@ var _loaded: Dictionary = {}
 var _manifest: Dictionary = {}
 var _map_available := false
 var _road_material: StandardMaterial3D
+var _dirt_road_material: StandardMaterial3D
+var _sidewalk_material: StandardMaterial3D
+var _window_material: StandardMaterial3D
+var _lamp_material: StandardMaterial3D
 var _ground_material: StandardMaterial3D
 var _waterway_material: StandardMaterial3D
 var _area_materials: Dictionary = {}
@@ -24,6 +28,13 @@ var _building_materials: Dictionary = {}
 
 func _ready() -> void:
 	_road_material = _make_material(Color(0.16, 0.17, 0.18), 0.94)
+	_dirt_road_material = _make_material(Color(0.34, 0.29, 0.20), 1.0)
+	_sidewalk_material = _make_material(Color(0.48, 0.47, 0.43), 0.96)
+	_window_material = _make_material(Color(0.12, 0.25, 0.32), 0.28)
+	_window_material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	_lamp_material = _make_material(Color(0.96, 0.78, 0.40), 0.35)
+	_lamp_material.emission_enabled = true
+	_lamp_material.emission = Color(0.95, 0.62, 0.24)
 	_ground_material = _make_material(Color(0.31, 0.39, 0.25), 1.0)
 	_waterway_material = _make_material(Color(0.12, 0.36, 0.50), 0.28)
 	_player = get_parent().get_node_or_null("Player") as Node3D
@@ -137,7 +148,7 @@ func _build_feature(parent: Node3D, feature: Dictionary) -> void:
 		return
 	if kind == "road":
 		for i in range(points.size() - 1):
-			_build_road_segment(parent, points[i], points[i + 1], str(feature.get("highway", "residential")))
+			_build_road_segment(parent, points[i], points[i + 1], str(feature.get("highway", "residential")), str(feature.get("surface", "")))
 	elif kind == "waterway":
 		for i in range(points.size() - 1):
 			_build_waterway_segment(parent, points[i], points[i + 1])
@@ -147,7 +158,7 @@ func _build_feature(parent: Node3D, feature: Dictionary) -> void:
 		_build_area(parent, points, str(feature.get("category", "")))
 
 
-func _build_road_segment(parent: Node3D, a: Variant, b: Variant, highway: String) -> void:
+func _build_road_segment(parent: Node3D, a: Variant, b: Variant, highway: String, surface: String = "") -> void:
 	if not a is Array or not b is Array or a.size() < 2 or b.size() < 2:
 		return
 	var start := Vector3(float(a[0]), 0.0, float(a[1]))
@@ -161,18 +172,65 @@ func _build_road_segment(parent: Node3D, a: Variant, b: Variant, highway: String
 		width = 8.0
 	elif highway in ["secondary", "tertiary"]:
 		width = 7.0
-	elif highway in ["service", "track", "path", "footway"]:
+	elif highway in ["service", "track", "path", "footway", "cycleway"]:
 		width = 3.0
-	# The sector ground already provides continuous collision. Road strips are
-	# visual-only, avoiding thousands of redundant physics bodies/shapes.
 	var road := MeshInstance3D.new()
 	var box := BoxMesh.new()
 	box.size = Vector3(width, 0.12, length + 0.35)
 	road.mesh = box
-	road.material_override = _road_material
+	road.material_override = _dirt_road_material if surface in ["dirt", "ground", "gravel", "unpaved", "sand"] or highway == "track" else _road_material
 	road.position = (start + finish) * 0.5
 	road.rotation.y = atan2(delta.x, delta.z)
 	parent.add_child(road)
+
+	# Add restrained sidewalks only to streets where pedestrians are expected.
+	if highway in ["primary", "secondary", "tertiary", "residential", "living_street", "unclassified"] and length >= 5.0:
+		var side := Vector3(delta.z, 0.0, -delta.x).normalized()
+		for sign in [-1.0, 1.0]:
+			var sidewalk := MeshInstance3D.new()
+			var slab := BoxMesh.new()
+			slab.size = Vector3(1.35, 0.10, length + 0.25)
+			sidewalk.mesh = slab
+			sidewalk.material_override = _sidewalk_material
+			sidewalk.position = (start + finish) * 0.5 + side * sign * (width * 0.5 + 0.82)
+			sidewalk.position.y = 0.015
+			sidewalk.rotation.y = road.rotation.y
+			parent.add_child(sidewalk)
+
+	# One low-cost decorative lamp on sufficiently long main-road segments.
+	if highway in ["primary", "secondary", "tertiary"] and length >= 32.0:
+		_build_street_lamp(parent, (start + finish) * 0.5, delta, width)
+
+
+func _build_street_lamp(parent: Node3D, centre: Vector3, road_delta: Vector3, road_width: float) -> void:
+	var side := Vector3(road_delta.z, 0.0, -road_delta.x).normalized()
+	var base := centre + side * (road_width * 0.5 + 2.0)
+	var pole := MeshInstance3D.new()
+	var pole_mesh := CylinderMesh.new()
+	pole_mesh.top_radius = 0.055
+	pole_mesh.bottom_radius = 0.09
+	pole_mesh.height = 5.2
+	pole.mesh = pole_mesh
+	pole.material_override = _point_material("street_lamp_pole", Color(0.18, 0.19, 0.20))
+	pole.position = base + Vector3(0.0, 2.6, 0.0)
+	parent.add_child(pole)
+	var arm := MeshInstance3D.new()
+	var arm_mesh := CylinderMesh.new()
+	arm_mesh.top_radius = 0.045
+	arm_mesh.bottom_radius = 0.045
+	arm_mesh.height = 1.15
+	arm.mesh = arm_mesh
+	arm.material_override = pole.material_override
+	arm.position = base + Vector3(0.0, 5.05, 0.0) - side * 0.52
+	arm.rotation.z = PI * 0.5
+	parent.add_child(arm)
+	var lamp := MeshInstance3D.new()
+	var lamp_mesh := BoxMesh.new()
+	lamp_mesh.size = Vector3(0.38, 0.12, 0.22)
+	lamp.mesh = lamp_mesh
+	lamp.material_override = _lamp_material
+	lamp.position = base + Vector3(0.0, 5.02, 0.0) - side * 1.0
+	parent.add_child(lamp)
 
 func _build_waterway_segment(parent: Node3D, a: Variant, b: Variant) -> void:
 	if not a is Array or not b is Array or a.size() < 2 or b.size() < 2:
@@ -231,23 +289,39 @@ func _build_point_feature(parent: Node3D, point: Array, feature: Dictionary, kin
 	marker.name = "%s_%s" % [kind, str(feature.get("osm_id", "unknown"))]
 	parent.add_child(marker)
 	if kind == "vegetation":
+		var species := str(feature.get("species", "")).to_lower()
+		var is_palm := "palm" in species or "palma" in species or "cocos" in species
 		var trunk := MeshInstance3D.new()
 		var trunk_mesh := CylinderMesh.new()
-		trunk_mesh.top_radius = 0.10
-		trunk_mesh.bottom_radius = 0.16
-		trunk_mesh.height = 1.8
+		trunk_mesh.top_radius = 0.08 if is_palm else 0.10
+		trunk_mesh.bottom_radius = 0.15
+		trunk_mesh.height = 4.4 if is_palm else 1.8
 		trunk.mesh = trunk_mesh
-		trunk.position.y = 0.9
+		trunk.position.y = trunk_mesh.height * 0.5
 		trunk.material_override = _point_material("tree_trunk", Color(0.30, 0.20, 0.12))
 		marker.add_child(trunk)
-		var crown := MeshInstance3D.new()
-		var crown_mesh := SphereMesh.new()
-		crown_mesh.radius = 1.0
-		crown_mesh.height = 2.0
-		crown.mesh = crown_mesh
-		crown.position.y = 2.25
-		crown.material_override = _point_material("tree_crown", Color(0.16, 0.34, 0.17))
-		marker.add_child(crown)
+		if is_palm:
+			for i in range(7):
+				var frond := MeshInstance3D.new()
+				var frond_mesh := CylinderMesh.new()
+				frond_mesh.top_radius = 0.015
+				frond_mesh.bottom_radius = 0.055
+				frond_mesh.height = 2.5
+				frond.mesh = frond_mesh
+				frond.position.y = 4.35
+				frond.rotation = Vector3(deg_to_rad(58.0), TAU * float(i) / 7.0, 0.0)
+				frond.material_override = _point_material("palm_leaf", Color(0.17, 0.36, 0.17))
+				marker.add_child(frond)
+		else:
+			for i in range(3):
+				var crown := MeshInstance3D.new()
+				var crown_mesh := SphereMesh.new()
+				crown_mesh.radius = 0.78 if i == 0 else 0.62
+				crown_mesh.height = 1.45
+				crown.mesh = crown_mesh
+				crown.position = Vector3(0.0, 2.0 + float(i % 2) * 0.42, (float(i) - 1.0) * 0.38)
+				crown.material_override = _point_material("tree_crown", Color(0.16, 0.34, 0.17))
+				marker.add_child(crown)
 	else:
 		var post := MeshInstance3D.new()
 		var post_mesh := CylinderMesh.new()
@@ -257,15 +331,27 @@ func _build_point_feature(parent: Node3D, point: Array, feature: Dictionary, kin
 		post.mesh = post_mesh
 		post.position.y = 0.45
 		var colour := Color(0.78, 0.62, 0.28)
-		if category == "amenity":
+		if category in ["amenity", "healthcare"]:
 			colour = Color(0.30, 0.58, 0.78)
-		elif category == "shop":
+		elif category in ["shop", "craft"]:
 			colour = Color(0.72, 0.42, 0.30)
-		elif category == "tourism":
+		elif category in ["tourism", "leisure"]:
 			colour = Color(0.48, 0.66, 0.42)
+		elif category == "office":
+			colour = Color(0.48, 0.50, 0.72)
 		post.material_override = _point_material("poi_" + category, colour)
 		marker.add_child(post)
-
+		var place_name := str(feature.get("name", "")).strip_edges()
+		if not place_name.is_empty():
+			var label := Label3D.new()
+			label.text = place_name
+			label.font_size = 28
+			label.pixel_size = 0.006
+			label.position.y = 2.0
+			label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+			label.outline_size = 5
+			label.modulate = Color(1.0, 0.96, 0.84)
+			marker.add_child(label)
 
 func _point_material(key: String, colour: Color) -> StandardMaterial3D:
 	if not _point_materials.has(key):
@@ -351,7 +437,19 @@ func _build_building(parent: Node3D, points: Array, feature: Dictionary) -> void
 		material.cull_mode = BaseMaterial3D.CULL_DISABLED
 		_building_materials[category] = material
 	instance.material_override = _building_materials[category]
-	body.add_child(instance)
+\tbody.add_child(instance)
+	_build_building_windows(body, polygon, height, levels)
+	var building_name := str(feature.get("name", "")).strip_edges()
+	if not building_name.is_empty():
+		var sign := Label3D.new()
+		sign.text = building_name
+		sign.font_size = 30
+		sign.pixel_size = 0.007
+		sign.position = Vector3((min_x + max_x) * 0.5, height + 1.2, (min_z + max_z) * 0.5)
+		sign.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+		sign.outline_size = 5
+		sign.modulate = Color(1.0, 0.96, 0.84)
+		body.add_child(sign)
 	var collision := CollisionShape3D.new()
 	var shape := BoxShape3D.new()
 	shape.size = Vector3(width, height, depth)
@@ -359,6 +457,58 @@ func _build_building(parent: Node3D, points: Array, feature: Dictionary) -> void
 	collision.position = Vector3((min_x + max_x) * 0.5, height * 0.5, (min_z + max_z) * 0.5)
 	body.add_child(collision)
 	parent.add_child(body)
+
+
+func _build_building_windows(parent: Node3D, polygon: PackedVector2Array, height: float, levels_value: float) -> void:
+	var floors := clampi(int(ceil(levels_value)), 1, 10)
+	var centre := Vector2.ZERO
+	for point in polygon:
+		centre += point
+	centre /= float(polygon.size())
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var window_count := 0
+	for i in range(polygon.size()):
+		var a := polygon[i]
+		var b := polygon[(i + 1) % polygon.size()]
+		var edge := b - a
+		var length := edge.length()
+		if length < 4.5:
+			continue
+		var direction := edge.normalized()
+		var outward := ((a + b) * 0.5 - centre).normalized() * 0.025
+		var count := mini(12, maxi(1, int(length / 3.2)))
+		for floor_index in range(floors):
+			var y := 1.25 + float(floor_index) * 3.0
+			if y + 1.0 > height - 0.35:
+				continue
+			for window_index in range(count):
+				var t := (float(window_index) + 0.5) / float(count)
+				var half_width := minf(0.42, length / float(count) * 0.22)
+				var centre_point := a + edge * t
+				var left := centre_point - direction * half_width
+				var right := centre_point + direction * half_width
+				var bottom_left := Vector3(left.x + outward.x, y, left.y + outward.y)
+				var bottom_right := Vector3(right.x + outward.x, y, right.y + outward.y)
+				var top_right := Vector3(right.x + outward.x, y + 0.95, right.y + outward.y)
+				var top_left := Vector3(left.x + outward.x, y + 0.95, left.y + outward.y)
+				surface.add_vertex(bottom_left)
+				surface.add_vertex(bottom_right)
+				surface.add_vertex(top_right)
+				surface.add_vertex(bottom_left)
+				surface.add_vertex(top_right)
+				surface.add_vertex(top_left)
+				window_count += 1
+	if window_count == 0:
+		return
+	surface.generate_normals()
+	var mesh := surface.commit()
+	if mesh == null:
+		return
+	var windows := MeshInstance3D.new()
+	windows.mesh = mesh
+	windows.material_override = _window_material
+	parent.add_child(windows)
 
 func _building_colour(category: String) -> Color:
 	match category:
