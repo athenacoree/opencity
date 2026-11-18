@@ -40,3 +40,7 @@ El cargador y el importador están en el código. El manifiesto inicial marca `b
 
 ## Automatización de la generación
 El repositorio incluye el workflow `.github/workflows/generate-map-data.yml`. Al incorporarse a `main`, intenta ejecutar el importador y, únicamente si el límite municipal está verificado y hay sectores/calles, guarda los JSON offline generados en el repositorio. También permite ejecución manual desde GitHub Actions. Este proceso genera datos cartográficos; no compila APK ni AAB.
+
+
+## Capas cartográficas incorporadas al importador
+El importador también conserva polígonos OSM de uso del suelo y elementos naturales etiquetados (por ejemplo, áreas agrícolas, vegetación y agua). El streamer los triangula y representa con materiales diferenciados dentro de cada sector. Estas capas dependen de la cobertura real de OSM: una zona sin etiquetas seguirá siendo terreno base, no una reconstrucción inventada. Las huellas de edificios continúan siendo volúmenes provisionales y no fachadas arquitectónicas detalladas.

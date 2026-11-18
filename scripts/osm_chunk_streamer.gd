@@ -16,6 +16,7 @@ var _manifest: Dictionary = {}
 var _map_available := false
 var _road_material: StandardMaterial3D
 var _ground_material: StandardMaterial3D
+var _area_materials: Dictionary = {}
 
 
 func _ready() -> void:
@@ -128,6 +129,8 @@ func _build_feature(parent: Node3D, feature: Dictionary) -> void:
 			_build_road_segment(parent, points[i], points[i + 1], str(feature.get("highway", "residential")))
 	elif kind == "building":
 		_build_building(parent, points, feature)
+	elif kind == "area":
+		_build_area(parent, points, str(feature.get("category", "")))
 
 
 func _build_road_segment(parent: Node3D, a: Variant, b: Variant, highway: String) -> void:
@@ -161,6 +164,58 @@ func _build_road_segment(parent: Node3D, a: Variant, b: Variant, highway: String
 	collision.shape = shape
 	body.add_child(collision)
 	parent.add_child(body)
+
+
+func _build_area(parent: Node3D, raw_points: Array, category: String) -> void:
+	var polygon := PackedVector2Array()
+	for point in raw_points:
+		if point is Array and point.size() >= 2:
+			polygon.append(Vector2(float(point[0]), float(point[1])))
+	if polygon.size() > 2 and polygon[0].is_equal_approx(polygon[polygon.size() - 1]):
+		polygon.remove_at(polygon.size() - 1)
+	if polygon.size() < 3:
+		return
+	var indices := Geometry2D.triangulate_polygon(polygon)
+	if indices.is_empty():
+		return
+	var surface := SurfaceTool.new()
+	surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for index in indices:
+		var point := polygon[index]
+		surface.add_vertex(Vector3(point.x, -0.12, point.y))
+	surface.generate_normals()
+	var mesh := surface.commit()
+	if mesh == null:
+		return
+	var instance := MeshInstance3D.new()
+	instance.mesh = mesh
+	if not _area_materials.has(category):
+		_area_materials[category] = _make_material(_area_colour(category), 1.0)
+	var material: StandardMaterial3D = _area_materials[category]
+	material.cull_mode = BaseMaterial3D.CULL_DISABLED
+	instance.material_override = material
+	parent.add_child(instance)
+
+
+func _area_colour(category: String) -> Color:
+	match category:
+		"water", "riverbank", "reservoir":
+			return Color(0.16, 0.36, 0.48)
+		"farmland", "orchard", "vineyard", "plant_nursery":
+			return Color(0.39, 0.46, 0.25)
+		"forest", "wood":
+			return Color(0.19, 0.34, 0.21)
+		"grass", "meadow", "scrub":
+			return Color(0.37, 0.46, 0.28)
+		"residential":
+			return Color(0.43, 0.43, 0.38)
+		"industrial", "commercial", "retail":
+			return Color(0.40, 0.41, 0.40)
+		"wetland", "marsh":
+			return Color(0.30, 0.42, 0.35)
+		_:
+			return Color(0.34, 0.40, 0.27)
+
 
 
 func _build_building(parent: Node3D, points: Array, feature: Dictionary) -> void:

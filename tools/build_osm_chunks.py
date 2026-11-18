@@ -194,10 +194,13 @@ def main() -> int:
             continue
         highway = tags.get("highway")
         building = tags.get("building")
-        if not highway and not building:
+        landuse = tags.get("landuse")
+        natural = tags.get("natural")
+        is_area = bool(landuse or natural in ("water", "wood", "scrub", "wetland"))
+        if not highway and not building and not is_area:
             continue
         coords = [(float(p["lon"]), float(p["lat"])) for p in geometry]
-        if building:
+        if building or is_area:
             centre_lon = sum(p[0] for p in coords[:-1] or coords) / len(coords[:-1] or coords)
             centre_lat = sum(p[1] for p in coords[:-1] or coords) / len(coords[:-1] or coords)
             if not inside_boundary(centre_lon, centre_lat):
@@ -206,14 +209,20 @@ def main() -> int:
             xs = [p[0] for p in points]
             zs = [p[1] for p in points]
             key = chunk_key(sum(xs) / len(xs), sum(zs) / len(zs))
-            feature = {
-                "kind": "building", "osm_id": element["id"], "points": points,
-                "building": building,
-                "levels": safe_number(tags.get("building:levels", 1), 1.0),
-                "height": safe_number(tags.get("height", 0), 0.0),
-            }
-            if feature["height"] <= 0:
-                feature["height"] = feature["levels"] * 3.2
+            if building:
+                feature = {
+                    "kind": "building", "osm_id": element["id"], "points": points,
+                    "building": building,
+                    "levels": safe_number(tags.get("building:levels", 1), 1.0),
+                    "height": safe_number(tags.get("height", 0), 0.0),
+                }
+                if feature["height"] <= 0:
+                    feature["height"] = feature["levels"] * 3.2
+            else:
+                feature = {
+                    "kind": "area", "osm_id": element["id"], "points": points,
+                    "category": landuse or natural,
+                }
             chunks[key].append(feature)
         elif highway:
             for index in range(len(coords) - 1):
@@ -264,6 +273,7 @@ def main() -> int:
             "chunks": len(chunks),
             "roads": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "road"),
             "buildings": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "building"),
+            "areas": sum(1 for fs in chunks.values() for f in fs if f["kind"] == "area"),
         },
         "generated_unix": int(time.time()),
     }
