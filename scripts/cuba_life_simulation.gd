@@ -15,8 +15,11 @@ var selected_house_id := ""
 var selected_job_id := "teacher"
 var mission_index := 0
 var intro_seen := false
+var friend_name := "Dani"
+var _day_night_timer := 0.0
 var _save_timer := 0.0
 var _last_hour := -1
+var _last_day_night_state := -1
 
 
 func _ready() -> void:
@@ -31,6 +34,7 @@ func _process(delta: float) -> void:
 		game_minutes -= 1440.0
 		game_day += 1
 		world_state_changed.emit()
+	_update_day_night()
 	var hour := int(game_minutes / 60.0)
 	if hour != _last_hour:
 		_last_hour = hour
@@ -39,6 +43,21 @@ func _process(delta: float) -> void:
 	if _save_timer >= 30.0:
 		_save_timer = 0.0
 		_save_profile()
+
+
+func _update_day_night() -> void:
+	var hour_float := game_minutes / 60.0
+	var daylight := clampf((sin((hour_float - 6.0) * PI / 12.0) + 0.12) / 1.12, 0.0, 1.0)
+	var world_node := get_parent()
+	var sun := world_node.get_node_or_null("Sun") as DirectionalLight3D
+	var world_environment := world_node.get_node_or_null("WorldEnvironment") as WorldEnvironment
+	if sun != null:
+		sun.light_energy = lerpf(0.08, 1.35, daylight)
+		sun.rotation.x = deg_to_rad(lerpf(-12.0, 65.0, daylight))
+		sun.shadow_enabled = daylight > 0.12
+	if world_environment != null and world_environment.environment != null:
+		world_environment.environment.ambient_light_energy = lerpf(0.16, 0.9, daylight)
+		world_environment.environment.fog_light_color = Color(0.035, 0.05, 0.09).lerp(Color(0.62, 0.68, 0.76), daylight)
 
 
 func _load_config() -> void:
@@ -70,6 +89,7 @@ func _load_profile() -> void:
 	selected_job_id = str(parsed.get("job_id", selected_job_id))
 	mission_index = int(parsed.get("mission_index", 0))
 	intro_seen = bool(parsed.get("intro_seen", false))
+	friend_name = str(parsed.get("friend_name", config.get("story", {}).get("friend_name_default", "Dani")))
 	game_day = maxi(1, int(parsed.get("day", 1)))
 	game_minutes = clampf(float(parsed.get("minutes", game_minutes)), 0.0, 1439.99)
 
@@ -84,6 +104,7 @@ func _save_profile() -> void:
 		"job_id": selected_job_id,
 		"mission_index": mission_index,
 		"intro_seen": intro_seen,
+		"friend_name": friend_name,
 		"day": game_day,
 		"minutes": game_minutes
 	}))
@@ -131,12 +152,14 @@ func get_sector_power(position: Vector3) -> bool:
 	var world: Dictionary = config.get("world", {})
 	var rotation := maxi(1, int(world.get("outage_rotation_game_minutes", 180)))
 	var outage_share := clampf(float(world.get("outage_share_of_sectors", 0.4)), 0.0, 0.9)
-	var sector_x := int(floor(position.x / 1000.0))
-	var sector_z := int(floor(position.z / 1000.0))
-	var sector_code := posmod(sector_x * 31 + sector_z * 17, 10)
+	var block_size := maxf(25.0, float(world.get("outage_block_size_m", 100.0)))
+	var sector_x := int(floor(position.x / block_size))
+	var sector_z := int(floor(position.z / block_size))
+	var sector_code := posmod(sector_x * 31 + sector_z * 17, 100)
 	var rotation_slot := int(floor((float(game_day - 1) * 1440.0 + game_minutes) / float(rotation)))
-	var outage_slots := roundi(outage_share * 10.0)
-	return posmod(sector_code + rotation_slot, 10) >= outage_slots
+	var outage_share_blocks := clampf(float(world.get("outage_share_of_blocks", outage_share)), 0.0, 0.9)
+	var outage_slots := roundi(outage_share_blocks * 100.0)
+	return posmod(sector_code + rotation_slot, 100) >= outage_slots
 
 
 func get_mobile_signal(position: Vector3) -> int:
@@ -162,6 +185,26 @@ func is_shop_open(shop_id: String) -> bool:
 			return hour >= opens and hour < closes
 		return hour >= opens or hour < closes
 	return false
+
+
+func set_friend_name(value: String) -> void:
+	var cleaned := value.strip_edges()
+	if cleaned.is_empty():
+		return
+	friend_name = cleaned.substr(0, 24)
+	_save_profile()
+	world_state_changed.emit()
+
+
+func get_friend_name() -> String:
+	return friend_name
+
+
+func get_current_objective_text() -> String:
+	var mission := get_current_mission()
+	if mission.is_empty():
+		return "Historia completada"
+	return str(mission.get("description", ""))
 
 
 func get_story_title() -> String:
