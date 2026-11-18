@@ -58,6 +58,10 @@ def overpass_query() -> str:
         f'way["healthcare"]({bbox});'
         f'way["office"]({bbox});'
         f'way["craft"]({bbox});'
+        f'way["education"]({bbox});'
+        f'way["public_transport"]({bbox});'
+        f'way["social_facility"]({bbox});'
+        f'way["emergency"]({bbox});'
         f'node["amenity"]({bbox});'
         f'node["shop"]({bbox});'
         f'node["tourism"]({bbox});'
@@ -65,6 +69,10 @@ def overpass_query() -> str:
         f'node["healthcare"]({bbox});'
         f'node["office"]({bbox});'
         f'node["craft"]({bbox});'
+        f'node["education"]({bbox});'
+        f'node["public_transport"]({bbox});'
+        f'node["social_facility"]({bbox});'
+        f'node["emergency"]({bbox});'
         f'node["natural"="tree"]({bbox});'
         ');out geom;'
     )
@@ -173,14 +181,14 @@ def public_building_label(tags: dict) -> str:
     if any(tags.get(key) for key in ("amenity", "shop", "tourism", "healthcare", "office", "craft")):
         return name
     if str(tags.get("building", "")).casefold() in {
-        "school", "hospital", "clinic", "university", "government", "public", "civic"
+        "school", "kindergarten", "college", "hospital", "clinic", "university", "government", "public", "civic"
     }:
         return name
     return ""
 
 
 def public_place_category(tags: dict) -> str:
-    for key in ("amenity", "healthcare", "shop", "tourism", "office", "craft", "leisure"):
+    for key in ("amenity", "healthcare", "education", "shop", "tourism", "office", "craft", "leisure", "public_transport", "social_facility", "emergency"):
         if tags.get(key):
             return key
     return ""
@@ -312,6 +320,10 @@ def main() -> int:
                 "name": tags.get("name", ""),
                 "place_type": tags.get(category, "") if category else "",
                 "species": tags.get("species", tags.get("species:en", "")),
+                "genus": tags.get("genus", tags.get("genus:en", "")),
+                "taxon": tags.get("taxon", tags.get("taxon:en", "")),
+                "leaf_type": tags.get("leaf_type", ""),
+                "height": safe_number(tags.get("height", tags.get("est_height", 5)), 5.0),
             })
             continue
         if element.get("type") != "way":
@@ -330,9 +342,13 @@ def main() -> int:
         healthcare = tags.get("healthcare")
         office = tags.get("office")
         craft = tags.get("craft")
+        education = tags.get("education")
+        public_transport = tags.get("public_transport")
+        social_facility = tags.get("social_facility")
+        emergency = tags.get("emergency")
         waterway = tags.get("waterway")
         is_area = bool(landuse or natural in ("water", "wood", "scrub", "wetland") or leisure)
-        is_poi = bool(amenity or shop or tourism or healthcare or office or craft)
+        is_poi = bool(amenity or shop or tourism or healthcare or office or craft or education or public_transport or social_facility or emergency)
         if not highway and not building and not is_area and not is_poi:
             continue
         coords = [(float(p["lon"]), float(p["lat"])) for p in geometry]
