@@ -165,6 +165,10 @@ func get_house_options() -> Array:
 	return config.get("houses", [])
 
 
+func get_job_options() -> Array:
+	return config.get("economy", {}).get("jobs", [])
+
+
 func select_house(house_id: String) -> bool:
 	for house in config.get("houses", []):
 		if str(house.get("id", "")) == house_id:
