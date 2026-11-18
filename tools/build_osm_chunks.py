@@ -15,6 +15,7 @@ import os
 import re
 import sys
 import time
+import urllib.error
 import urllib.parse
 import urllib.request
 from collections import defaultdict
@@ -66,8 +67,19 @@ def fetch_osm() -> dict:
         data=data,
         headers={"User-Agent": "GuiraDeMelenaWorldBuilder/1.0 (offline game map import)"},
     )
-    with urllib.request.urlopen(request, timeout=240) as response:
-        return json.loads(response.read().decode("utf-8"))
+    last_error: Exception | None = None
+    for attempt in range(4):
+        try:
+            with urllib.request.urlopen(request, timeout=240) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as exc:
+            last_error = exc
+            if attempt == 3:
+                break
+            delay = 2 ** (attempt + 1)
+            print(f"Overpass no respondió ({exc}); nuevo intento en {delay}s...", file=sys.stderr)
+            time.sleep(delay)
+    raise RuntimeError(f"Overpass no estuvo disponible después de 4 intentos: {last_error}")
 
 
 def stitch_outer_rings(relation: dict) -> list[list[tuple[float, float]]]:
