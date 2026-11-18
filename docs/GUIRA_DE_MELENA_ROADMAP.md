@@ -64,3 +64,7 @@ Los polígonos de uso del suelo que cruzan límites de sectores se recortan cont
 
 ## Optimización de colisiones de carretera
 Las tiras visuales de carretera ya no crean un `StaticBody3D` y una forma física por cada segmento OSM. La superficie base de cada sector mantiene la colisión continua para caminar y conducir; las carreteras se dibujan como mallas sin colisión propia. Esto reduce la cantidad de objetos físicos activos cuando se cargan varios miles de segmentos. Debe medirse en Godot/Android antes de fijar el perfil final de rendimiento.
+
+
+## Calidad adaptativa en móviles
+En dispositivos táctiles/móviles el juego vigila el FPS en ventanas de cinco segundos. Si permanece por debajo de 28 FPS durante tres ventanas, reduce temporalmente SSAO, glow, sombras direccionales y MSAA para aliviar la GPU. Si supera 42 FPS durante seis ventanas, restaura los valores originales. En escritorio no modifica la calidad. Es un mecanismo preventivo que requiere medir y ajustar umbrales en dispositivos Android reales.
