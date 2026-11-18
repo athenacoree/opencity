@@ -78,3 +78,7 @@ Además de los nodos OSM, el importador recoge establecimientos y servicios etiq
 La importación incorpora categorías OSM de servicios sanitarios, oficinas y talleres (healthcare, office, craft), además de amenity, shop, tourism y leisure. Conserva nombres de establecimientos y edificios institucionales etiquetados. Se excluyen expresamente los nombres de edificios residenciales privados para no convertir el mapa en un directorio de habitantes. No se extraen nombres de propietarios ni datos personales desde Google Maps.
 
 En el render se añaden aceras ligeras a calles urbanas, materiales diferenciados para caminos sin pavimentar, farolas decorativas de bajo coste en tramos principales, ventanas agrupadas por edificio, rótulos 3D para lugares públicos con nombre y modelos de vegetación algo más variados, incluyendo palmeras cuando la etiqueta de especie lo permite. La cobertura y la colocación real requieren validación visual dentro de Godot.
+
+
+## Cobertura ampliada de servicios y vegetación
+La consulta OSM incluye ahora etiquetas públicas adicionales: education, public_transport, social_facility y emergency, tanto en nodos como en vías. Se mantienen los filtros de nombres para excluir viviendas privadas y datos de residentes. Los árboles importan especie, género, taxón, tipo de hoja y altura cuando están disponibles; el modelo 3D usa esas etiquetas para distinguir palmeras y ajustar la escala, con valores prudentes cuando faltan medidas.
