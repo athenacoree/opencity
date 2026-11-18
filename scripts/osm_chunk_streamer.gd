@@ -25,7 +25,7 @@ var _area_materials: Dictionary = {}
 var _point_materials: Dictionary = {}
 var _building_materials: Dictionary = {}
 var _life_simulation: Node
-var _last_power_state := true
+var _last_power_state := false
 
 
 func _ready() -> void:
